@@ -1,8 +1,11 @@
 # dotenv: readEnvFile()
 
-A single function implementation of https://github.com/vlucas/phpdotenv
+A single function implementation of <https://github.com/vlucas/phpdotenv>
 
 This is not a functional replacement, but a very simple implementation of the basic functions.
+
+It is recommended to create a `.env.example` example file that is checked into the
+repository. The `.env` should *NEVER* be checked into anything
 
 ## How it works
 

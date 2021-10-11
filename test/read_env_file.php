@@ -9,7 +9,7 @@ print "ORIG: <pre>" . file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '.env') 
 
 $status = readEnvFile(__DIR__);
 
-print "STATUS: " . ($status ? 'OK' : 'FAIL') . "<br>";
+print "STATUS: " . (string)$status . "<br>";
 print "ENV: <pre>" . print_r($_ENV, true) . "</pre><br>";
 
 // __END__
