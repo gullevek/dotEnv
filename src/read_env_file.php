@@ -49,11 +49,12 @@ function readEnvFile(string $path = __DIR__, string $env_file = '.env'): int
 			// wirte only if env is not set yet, and write only the first time
 			if (empty($_ENV[$var])) {
 				if (!empty($quotes)) {
-					$block = true;
 					// match greedy for first to last so we move any " if there are
 					if (preg_match('/^"(.*[^\\\])"/U', $value, $matches)) {
 						$value = $matches[1];
 					} else {
+						// this is a multi line
+						$block = true;
 						// first " in string remove
 						// add removed new line back because this is a multi line
 						$value = ltrim($value, '"') . PHP_EOL;
