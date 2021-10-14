@@ -42,7 +42,7 @@ function readEnvFile(string $path = __DIR__, string $env_file = '.env'): int
 	$var = '';
 	while ($line = fgets($fp)) {
 		// main match for variable = value part
-		if (preg_match("/^\s*([\w_]+)\s*=\s*((\"?).*)/", $line, $matches)) {
+		if (preg_match("/^\s*([\w_.]+)\s*=\s*((\"?).*)/", $line, $matches)) {
 			$var = $matches[1];
 			$value = $matches[2];
 			$quotes = $matches[3];
