@@ -15,16 +15,13 @@
  *
  * @param  string $path     Folder to file, default is __DIR__
  * @param  string $env_file What file to load, default is .env
- * @return int              -1 other error
- *                          0 for success full load
+ * @return int              0 for success full load
  *                          1 for file loadable, but no data inside
  *                          2 for file not readable
  *                          3 for file not found
  */
 function readEnvFile(string $path = __DIR__, string $env_file = '.env'): int
 {
-	// default -1;
-	$status = -1;
 	$env_file_target = $path . DIRECTORY_SEPARATOR . $env_file;
 	// this is not a file -> abort
 	if (!is_file($env_file_target)) {
@@ -74,6 +71,7 @@ function readEnvFile(string $path = __DIR__, string $env_file = '.env'): int
 				$line = $matches[1];
 			}
 			// strip line of slashes
+			/** @psalm-suppress MixedOperand */
 			$_ENV[$var] .= stripslashes($line);
 		}
 	}
