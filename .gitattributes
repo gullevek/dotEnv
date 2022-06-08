@@ -1,0 +1,6 @@
+test/ export-ignore
+phpstan.neon	export-ignore
+phpunit.xml	export-ignore
+psalm.xml	export-ignore
+.phan/	export-ignore
+.*	export-ignore
