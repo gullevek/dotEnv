@@ -7,7 +7,7 @@ namespace tests;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test class for ACL\Login
+ * Test class for DotEnv
  * @coversDefaultClass \gullevek\DotEnv
  * @testdox \gullevek\DotEnv method tests
  */
