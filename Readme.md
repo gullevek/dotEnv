@@ -9,7 +9,19 @@ repository. The `.env` should *NEVER* be checked into anything
 
 ## How to install
 
-`comoser require gullevek/dotEnv`
+`composer require gullevek/dotEnv`
+
+## Run it
+
+Create a `.env` file in the current folder.
+Create a file like below
+
+```php
+require '../vendor/autoload.php';
+gullevek\dotEnv\DotEnv::readEnvFile(__DIR__);
+```
+
+All data will be in the `$_ENV` array
 
 ## How it works
 
