@@ -1,5 +1,4 @@
 <phpunit
-    cacheResultFile="/tmp/phpunit-dotenv.result.cache"
     colors="true"
     verbose="true"
 >
