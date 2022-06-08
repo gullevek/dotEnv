@@ -45,36 +45,42 @@ final class DotEnvTest extends TestCase
 		// 1: file, if unset .env
 		// 2: status to be returned
 		// 3: _ENV file content to be set
+		// 4: override chmod as octect in string
 		return [
 			'default' => [
 				'folder' => null,
 				'file' => null,
 				'status' => 3,
 				'content' => [],
+				'chmod' => null,
 			],
 			'cannot open file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'cannot_read.env',
 				'status' => 2,
 				'content' => [],
+				'chmod' => '000',
 			],
 			'empty file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'empty.env',
 				'status' => 1,
 				'content' => [],
+				'chmod' => null,
 			],
 			'override all' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'test.env',
 				'status' => 0,
 				'content' => $dot_env_content,
+				'chmod' => null,
 			],
 			'override directory' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => null,
 				'status' => 0,
 				'content' => $dot_env_content,
+				'chmod' => null,
 			],
 		];
 	}
@@ -90,14 +96,26 @@ final class DotEnvTest extends TestCase
 	 * @param  string|null $file
 	 * @param  int         $expected_status
 	 * @param  array       $expected_env
+	 * @param  string|null $chmod
 	 * @return void
 	 */
 	public function testReadEnvFile(
 		?string $folder,
 		?string $file,
 		int $expected_status,
-		array $expected_env
+		array $expected_env,
+		?string $chmod
 	): void {
+		// if we have file + chmod set
+		$old_chmod = null;
+		if (
+			is_file($folder . DIRECTORY_SEPARATOR . $file) &&
+			!empty($chmod)
+		) {
+			// get the old permissions
+			$old_chmod = fileperms($folder . DIRECTORY_SEPARATOR . $file);
+			chmod($folder . DIRECTORY_SEPARATOR . $file, octdec($chmod));
+		}
 		if ($folder !== null && $file !== null) {
 			$status = \gullevek\dotEnv\DotEnv::readEnvFile($folder, $file);
 		} elseif ($folder !== null) {
@@ -116,6 +134,10 @@ final class DotEnvTest extends TestCase
 			$expected_env,
 			'Assert _ENV correct'
 		);
+		// if we have file and chmod unset
+		if ($old_chmod !== null) {
+			chmod($folder . DIRECTORY_SEPARATOR . $file, $old_chmod);
+		}
 	}
 }
 
