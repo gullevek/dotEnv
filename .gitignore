@@ -1,0 +1,7 @@
+.phan
+vendor
+.phpunit.result.cache
+composer.lock
+phpunit.xml
+phpstan.neon
+psalm.xml
