@@ -77,6 +77,8 @@ return [
 	// A list of directories holding code that we want
 	// to parse, but not analyze
 	"exclude_analysis_directory_list" => [
+		'vendor',
+		'test'
 	],
 	'exclude_file_list' => [
 	],
