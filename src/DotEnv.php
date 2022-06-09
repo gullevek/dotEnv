@@ -26,7 +26,7 @@ class DotEnv
 	 * @param  string $env_file What file to load, default is .env
 	 * @return int              -1 other error
 	 *                          0 for success full load
-	 *                          1 for file loadable, but no data inside
+	 *                          1 for file loadable, no data or data already loaded
 	 *                          2 for file not readable or open failed
 	 *                          3 for file not found
 	 */
