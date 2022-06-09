@@ -6,6 +6,9 @@ namespace gullevek\dotEnv;
 
 class DotEnv
 {
+	/** @var string constant comment char, set to # */
+	private const COMMENT_CHAR = '#';
+
 	/**
 	 * parses .env file
 	 *
@@ -72,6 +75,11 @@ class DotEnv
 							// add removed new line back because this is a multi line
 							$value = ltrim($value, '"') . PHP_EOL;
 						}
+					} else {
+						// strip any quotes at end for unquoted single line
+						// an right hand spaces are removed too
+						$value = false !== ($pos = strpos($value, self::COMMENT_CHAR)) ?
+							rtrim(substr($value, 0, $pos)) : $value;
 					}
 					// if block is set, we strip line of slashes
 					$_ENV[$var] = $block === true ? stripslashes($value) : $value;
@@ -94,6 +102,5 @@ class DotEnv
 		return $status;
 	}
 }
-
 
 // __END__
