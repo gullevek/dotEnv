@@ -94,6 +94,10 @@ class DotEnv
 					// strip ending " and EVERYTHING that follows after that
 					$line = $matches[1];
 				}
+				// just be sure it is init before we fill
+				if (!isset($_ENV[$var])) {
+					$_ENV[$var] = '';
+				}
 				// strip line of slashes
 				$_ENV[$var] .= stripslashes($line);
 			}
