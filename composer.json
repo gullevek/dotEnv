@@ -26,7 +26,6 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9",
-        "overtrue/phplint": "8.1.x-dev",
         "phpstan/phpstan": "1.10.x-dev",
         "phan/phan": "v5.x-dev"
     }

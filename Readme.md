@@ -63,6 +63,16 @@ DOUBLE="This will be ignored"
 
 ## Development
 
+### Phan
+
+`vendor/bin/phan
+
+### PHPstan
+
+`vendor/bin/phpstan --analyze-twice`
+
+### PHPUnit
+
 Unit tests have to be run from base folder with
 
 `vendor/bin/phpunit test/phpUnitTests/`
