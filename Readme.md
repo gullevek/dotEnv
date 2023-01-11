@@ -60,3 +60,9 @@ ESCAPE="String \" inside \" other "
 DOUBLE="I will be used"
 DOUBLE="This will be ignored"
 ```
+
+## Development
+
+Unit tests have to be run from base folder with
+
+`vendor/bin/phpunit test/phpUnitTests/`

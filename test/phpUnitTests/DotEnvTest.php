@@ -14,6 +14,32 @@ use PHPUnit\Framework\TestCase;
 final class DotEnvTest extends TestCase
 {
 	/**
+	 * setup the .env files before test run
+	 *
+	 * @return void
+	 */
+	protected function setUp(): void
+	{
+		// create .env files
+		$file_content = __DIR__ . DIRECTORY_SEPARATOR
+			. 'dotenv' . DIRECTORY_SEPARATOR
+			. 'test.env';
+		$env_files = [
+			__DIR__ . DIRECTORY_SEPARATOR
+				. 'dotenv' . DIRECTORY_SEPARATOR
+				. '.env',
+			__DIR__ . DIRECTORY_SEPARATOR
+				. '.env',
+		];
+		// if not found, skip -> all will fail
+		if (is_file($file_content)) {
+			foreach ($env_files as $env_file) {
+				copy($file_content, $env_file);
+			}
+		}
+	}
+
+	/**
 	 * Undocumented function
 	 *
 	 * @return array
