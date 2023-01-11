@@ -12,14 +12,14 @@ pipelines:
         - step:
             name: Test
             script:
-              - composer require phpunit/phpunit
+              - composer require phpunit/phpunit:^9
               - ./vendor/bin/phpunit ./test/phpUnitTests
             caches:
               - composer
         - step:
             name: Lint
             script:
-              - composer require overtrue/phplint
+              - composer require overtrue/phplint:8.1.x-dev
               - ./vendor/bin/phplint ./ --exclude=vendor
             caches:
               - composer
