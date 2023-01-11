@@ -65,11 +65,11 @@ DOUBLE="This will be ignored"
 
 ### Phan
 
-`vendor/bin/phan
+`vendor/bin/phan --analyze-twice`
 
 ### PHPstan
 
-`vendor/bin/phpstan --analyze-twice`
+`vendor/bin/phpstan`
 
 ### PHPUnit
 
