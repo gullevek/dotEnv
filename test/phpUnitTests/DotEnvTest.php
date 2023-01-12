@@ -156,6 +156,8 @@ final class DotEnvTest extends TestCase
 		array $expected_env,
 		?string $chmod
 	): void {
+		// skip if chmod is set to 10000 (000 no rights) if we are root
+		// as root there is no stop reading a file
 		if (
 			!empty($chmod) &&
 			$chmod == '100000' &&
