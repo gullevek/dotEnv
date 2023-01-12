@@ -18,17 +18,21 @@ final class DotEnvTest extends TestCase
 	 *
 	 * @return void
 	 */
-	protected function setUp(): void
+	public static function setUpBeforeClass(): void
 	{
 		// create .env files
 		$file_content = __DIR__ . DIRECTORY_SEPARATOR
 			. 'dotenv' . DIRECTORY_SEPARATOR
 			. 'test.env';
+		// copy to all folder levels
 		$env_files = [
 			__DIR__ . DIRECTORY_SEPARATOR
 				. 'dotenv' . DIRECTORY_SEPARATOR
 				. '.env',
 			__DIR__ . DIRECTORY_SEPARATOR
+				. '.env',
+			__DIR__ . DIRECTORY_SEPARATOR
+				. '..' . DIRECTORY_SEPARATOR
 				. '.env',
 		];
 		// if not found, skip -> all will fail
@@ -102,21 +106,24 @@ final class DotEnvTest extends TestCase
 				'file' => 'cannot_read.env',
 				'status' => 2,
 				'content' => [],
-				'chmod' => '000',
+				// 0000
+				'chmod' => '100000',
 			],
 			'empty file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'empty.env',
 				'status' => 1,
 				'content' => [],
-				'chmod' => null,
+				// 0664
+				'chmod' => '100664',
 			],
 			'override all' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'test.env',
 				'status' => 0,
 				'content' => $dot_env_content,
-				'chmod' => null,
+				// 0664
+				'chmod' => '100664',
 			],
 			'override directory' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
@@ -149,8 +156,21 @@ final class DotEnvTest extends TestCase
 		array $expected_env,
 		?string $chmod
 	): void {
-		// if we have file + chmod set
+		if (
+			!empty($chmod) &&
+			$chmod == '100000' &&
+			getmyuid() == 0
+		) {
+			$this->markTestSkipped(
+				"Skip cannot read file test because run user is root"
+			);
+			return;
+		}
+		// reset $_ENV for clean compare
+		$_ENV = [];
+		// previous file perm
 		$old_chmod = null;
+		// if we have change permission for file
 		if (
 			is_file($folder . DIRECTORY_SEPARATOR . $file) &&
 			!empty($chmod)
