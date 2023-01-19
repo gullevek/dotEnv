@@ -8,18 +8,18 @@ use gullevek\dotEnv\DotEnv;
 
 // copy test file to .env file in env folder
 $file_content = __DIR__ . DIRECTORY_SEPARATOR
-	. 'phpUnitTests' . DIRECTORY_SEPARATOR
-	. 'dotenv' . DIRECTORY_SEPARATOR
-	. 'test.env';
+    . 'phpUnitTests' . DIRECTORY_SEPARATOR
+    . 'dotenv' . DIRECTORY_SEPARATOR
+    . 'test.env';
 // env folder
 $env_file = __DIR__ . DIRECTORY_SEPARATOR
-	. 'env' . DIRECTORY_SEPARATOR
-	. '.env';
+    . 'env' . DIRECTORY_SEPARATOR
+    . '.env';
 if (!is_file($file_content)) {
-	die("Cannot read $file_content");
+    die("Cannot read $file_content");
 }
 if (copy($file_content, $env_file) === false) {
-	die("Cannot copy $file_content to $env_file");
+    die("Cannot copy $file_content to $env_file");
 }
 
 print "BASE: " . __DIR__ . "<br>";
