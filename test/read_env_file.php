@@ -31,4 +31,8 @@ $status = DotEnv::readEnvFile(__DIR__ . DIRECTORY_SEPARATOR . 'env');
 print "STATUS: " . (string)$status . "<br>";
 print "ENV: <pre>" . print_r($_ENV, true) . "</pre><br>";
 
+$status = gullevek\dotenv\DotEnv::readEnvFile(__DIR__ . DIRECTORY_SEPARATOR . 'env');
+print "STATUS B: " . (string)$status . "<br>";
+print "ENV B: <pre>" . print_r($_ENV, true) . "</pre><br>";
+
 // __END__
