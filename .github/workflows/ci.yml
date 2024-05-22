@@ -16,11 +16,7 @@ jobs:
         with:
           path: src/
           configuration: phpstan.neon
-      # - name: PHPunit Tests
-        # uses: php-actions/phpunit@v3
-        # with:
-          # version: 9
-          # configuration: phpunit.xml
+      # We need to use phpunit from the self install to get the class paths
       - name: PHPunit Tests
         run: |
           vendor/bin/phpunit
