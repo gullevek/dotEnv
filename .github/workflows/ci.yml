@@ -15,3 +15,9 @@ jobs:
         uses: php-actions/phpstan@v3
         with:
           path: src/
+          configuration: phpstan.neo
+      - name: PHPunit Tests
+        uses: php-actions/phpunit@v3
+        with:
+          version: 9
+          configuration: phpunit.xml
