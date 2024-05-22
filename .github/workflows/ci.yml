@@ -4,7 +4,7 @@ run-name: ${{ github.actor}} runs CI
 on: [push]
 
 jobs:
-  phpstan:
+  ci-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +15,7 @@ jobs:
         uses: php-actions/phpstan@v3
         with:
           path: src/
-          configuration: phpstan.neo
+          configuration: phpstan.neon
       - name: PHPunit Tests
         uses: php-actions/phpunit@v3
         with:
