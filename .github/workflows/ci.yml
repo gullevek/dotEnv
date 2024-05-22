@@ -14,7 +14,7 @@ jobs:
       - name: "Restore result cache"
         uses: actions/cache/restore@v3
         with:
-          path: /tmp/phpstan-codeblocks-dotenv
+          path: ./tmp/phpstan-codeblocks-dotenv
           key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
           restore-keys: |
             result-cache-v1-${{ matrix.php-version }}-
@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache/save@v3
         if: always()
         with:
-          path: /tmp/phpstan-codeblocks-dotenv
+          path: ./tmp/phpstan-codeblocks-dotenv
           key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
           # We need to use phpunit from the self install to get the class paths
       - name: PHPunit Tests

@@ -1,7 +1,7 @@
 # PHP Stan Config
 
 parameters:
-	tmpDir: /tmp/phpstan-codeblocks-dotenv
+	tmpDir: %currentWorkingDirectory%/tmp/phpstan-codeblocks-dotenv
 	level: max
 	paths:
 		- %currentWorkingDirectory%/src
