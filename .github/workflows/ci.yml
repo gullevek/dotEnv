@@ -9,7 +9,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: php-actions/composer@v6
-
+        env:
+          COMPOSER_ROOT_VERSION: dev-master
       - name: PHPStan Static Analysis
         uses: php-actions/phpstan@v3
         with:
