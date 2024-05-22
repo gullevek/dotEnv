@@ -2,4 +2,9 @@
     colors="true"
     verbose="true"
 >
+<testsuites>
+    <testsuite name="unit">
+        <directory>test/phpUnitTests/</directory>
+    </testsuite>
+</testsuites>
 </phpunit>
