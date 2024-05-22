@@ -16,8 +16,11 @@ jobs:
         with:
           path: src/
           configuration: phpstan.neon
+      # - name: PHPunit Tests
+        # uses: php-actions/phpunit@v3
+        # with:
+          # version: 9
+          # configuration: phpunit.xml
       - name: PHPunit Tests
-        uses: php-actions/phpunit@v3
-        with:
-          version: 9
-          configuration: phpunit.xml
+        run: |
+          vendor/bin/phpunit
