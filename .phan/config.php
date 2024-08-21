@@ -78,7 +78,8 @@ return [
     // to parse, but not analyze
     "exclude_analysis_directory_list" => [
         'vendor',
-        'test'
+        'test',
+        'tmp'
     ],
     'exclude_file_list' => [
     ],

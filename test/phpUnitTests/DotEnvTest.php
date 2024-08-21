@@ -60,6 +60,8 @@ final class DotEnvTest extends TestCase
             'HAS_COMMENT_NO_QUOTES_SPACE' => 'Comment at end no quotes and space',
             'HAS_COMMENT_NO_QUOTES_NO_SPACE' => 'Comment at end no quotes no space',
             'COMMENT_IN_TEXT_QUOTES' => 'Foo bar # comment in here',
+            'HAS_EQUAL_NO_QUITES' => 'Is This = Valid',
+            'HAS_EQUAL_QUITES' => 'Is This = Valid',
             'FAILURE' => 'ABC',
             'SIMPLEBOX' => 'A B  C',
             'TITLE' => '1',
@@ -87,6 +89,8 @@ final class DotEnvTest extends TestCase
             '__FOOFOO' => 'f     ',
             123123 => 'number',
             'EMPTY' => '',
+            'Var_Test.TEST' => 'Block 1 D',
+            'OtherSet.TEST' => 'Block 2 D',
         ];
         // 0: folder relative to test folder, if unset __DIR__
         // 1: file, if unset .env

@@ -22,6 +22,9 @@ class DotEnv
      * if there are two variables with the same name only the first is used
      * variables are case sensitive
      *
+     * [] Grouping Block Name as prefix until next or end if set,
+     * space replaced by _, all other var rules apply
+     *
      * @param  string $path     Folder to file, default is __DIR__
      * @param  string $env_file What file to load, default is .env
      * @return int              -1 other error
@@ -56,10 +59,14 @@ class DotEnv
         $status = 1;
         $block = false;
         $var = '';
+        $prefix_name = '';
         while ($line = fgets($fp)) {
-            // main match for variable = value part
-            if (preg_match("/^\s*([\w_.]+)\s*=\s*((\"?).*)/", $line, $matches)) {
-                $var = $matches[1];
+            // [] block must be a single line, or it will be ignored
+            if (preg_match("/^\s*\[([\w_.\s]+)\]/", $line, $matches)) {
+                $prefix_name = preg_replace("/\s+/", "_", $matches[1]) . ".";
+            } elseif (preg_match("/^\s*([\w_.]+)\s*=\s*((\"?).*)/", $line, $matches)) {
+                // main match for variable = value part
+                $var = $prefix_name . $matches[1];
                 $value = $matches[2];
                 $quotes = $matches[3];
                 // write only if env is not set yet, and write only the first time

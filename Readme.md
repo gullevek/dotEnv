@@ -61,6 +61,29 @@ DOUBLE="I will be used"
 DOUBLE="This will be ignored"
 ```
 
+A prefix name can be set with `[PrefixName]`. Tne name rules are like for variables, but spaces
+are allowed, but will be converted to "_".
+The prefix is valid from the time set until the next prefix block appears or the file ends.
+
+Example
+
+```ini
+FOO="bar"
+FOOBAR="bar bar"
+[SecitonA]
+FOO="other bar"
+FOOBAR="other bar bar"
+```
+
+Will have environmen variables as
+
+```php
+$_ENV["FOO"];
+$_ENV["FOOBAR"];
+$_ENV["SecitonA.FOO"];
+$_ENV["SecitonA.FOOBAR"];
+```
+
 ## Development
 
 ### Phan
