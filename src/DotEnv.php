@@ -60,7 +60,7 @@ class DotEnv
         $block = false;
         $var = '';
         $prefix_name = '';
-        while ($line = fgets($fp)) {
+        while (($line = fgets($fp)) !== false) {
             // [] block must be a single line, or it will be ignored
             if (preg_match("/^\s*\[([\w_.\s]+)\]/", $line, $matches)) {
                 $prefix_name = preg_replace("/\s+/", "_", $matches[1]) . ".";
@@ -104,6 +104,9 @@ class DotEnv
                 // just be sure it is init before we fill
                 if (!isset($_ENV[$var])) {
                     $_ENV[$var] = '';
+                } elseif (!is_string($_ENV[$var])) {
+                    // if this is not string, skip
+                    continue;
                 }
                 // strip line of slashes
                 $_ENV[$var] .= stripslashes($line);
