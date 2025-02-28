@@ -2,3 +2,5 @@ vendor
 .phpunit.result.cache
 .phplint-cache
 composer.lock
+**/.env
+**/.target
