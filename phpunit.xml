@@ -1,10 +1,8 @@
-<phpunit
-    colors="true"
-    verbose="false"
->
-    <testsuites>
-        <testsuite name="unit">
-            <directory>test/phpUnitTests/</directory>
-        </testsuite>
-    </testsuites>
+<?xml version="1.0"?>
+<phpunit colors="true" cacheDirectory=".phpunit.cache">
+  <testsuites>
+    <testsuite name="unit">
+      <directory>test/phpUnitTests/</directory>
+    </testsuite>
+  </testsuites>
 </phpunit>
