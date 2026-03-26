@@ -276,6 +276,7 @@ final class DotEnvTest extends TestCase
 			);
 		}
 		try {
+			chmod(__DIR__ . DIRECTORY_SEPARATOR . 'dotenv' . DIRECTORY_SEPARATOR . 'cannot_read.env', octdec('100000'));
 			\gullevek\dotEnv\DotEnv::readEnvFile(
 				__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'cannot_read.env',
@@ -294,8 +295,8 @@ final class DotEnvTest extends TestCase
 				$e->getMessage(),
 				'Assert exception message contains "Open failed"'
 			);
-			return;
 		}
+		chmod(__DIR__ . DIRECTORY_SEPARATOR . 'dotenv' . DIRECTORY_SEPARATOR . 'cannot_read.env', octdec('100664'));
 	}
 
 	/**
