@@ -1,13 +1,23 @@
 <?php
 
+/**
+ * AUTHOR: Clemens Schwaighofer
+ * CREATED: 2026/3/25
+ * DESCRIPTION:
+ * ultra simple .env reader
+*/
+
 declare(strict_types=1);
 
 namespace gullevek\dotEnv;
 
+use gullevek\dotEnv\Levels\DotEnvLevel;
+use gullevek\dotEnv\Exceptions;
+
 class DotEnv
 {
 	/** @var string constant comment char, set to # */
-	private const COMMENT_CHAR = '#';
+	public const COMMENT_CHAR = '#';
 
 	/**
 	 * parses .env file
@@ -27,50 +37,59 @@ class DotEnv
 	 *
 	 * @param  string $path     Folder to file, default is __DIR__
 	 * @param  string $env_file What file to load, default is .env
-	 * @return int              -1 other error
-	 *                          0 for success full load
-	 *                          1 for file loadable, no data or data already loaded
-	 *                          2 for file not readable or open failed
-	 *                          3 for file not found
+	 * @param  bool   $throw_exception [default=false] Whether to throw exceptions or not
+	 * @return DotEnvLevel      OTHER_ERROR/-1 other error
+	 *                          SUCCESS/0 for success full load
+	 *                          FILE_LOADED_NO_DATA_OR_ALREADY_LOADED/1 for file loadable, no data or already loaded
+	 *                          FILE_NOT_READABLE_OR_OPEN_FAILED/2 for file not readable or open failed
+	 *                          FILE_NOT_FOUND/3 for file not found
 	 */
 	public static function readEnvFile(
 		string $path = __DIR__,
-		string $env_file = '.env'
-	): int {
-		// default -1;
-		$status = -1;
+		string $env_file = '.env',
+		bool $throw_exception = false,
+	): DotEnvLevel {
+		// default other error;
 		$env_file_target = $path . DIRECTORY_SEPARATOR . $env_file;
 		// this is not a file -> abort
 		if (!is_file($env_file_target)) {
-			$status = 3;
-			return $status;
+			if ($throw_exception) {
+				throw new Exceptions\DotEnvFileNotFoundException("File not found: " . $env_file_target);
+			}
+			return DotEnvLevel::ERROR_FILE_NOT_FOUND;
 		}
 		// cannot open file -> abort
 		if (!is_readable($env_file_target)) {
-			$status = 2;
-			return $status;
+			if ($throw_exception) {
+				throw new Exceptions\DotEnvFileNotReadableException("File not readable: " . $env_file_target);
+			}
+			return DotEnvLevel::ERROR_FILE_NOT_READABLE;
 		}
 		// open file
 		if (($fp = fopen($env_file_target, 'r')) === false) {
-			$status = 2;
-			return $status;
+			if ($throw_exception) {
+				throw new Exceptions\DotEnvFileOpenFailedException("Open failed: " . $env_file_target);
+			}
+			return DotEnvLevel::ERROR_FILE_OPEN_FAILED;
 		}
 		// set to readable but not yet any data loaded
-		$status = 1;
+		$status = DotEnvLevel::WARNING_FILE_LOADED_NO_DATA;
 		$block = false;
 		$var = '';
 		$prefix_name = '';
+		/** @var array<string,mixed> */
+		$_LOAD_ENV = [];
 		while (($line = fgets($fp)) !== false) {
 			// [] block must be a single line, or it will be ignored
 			if (preg_match("/^\s*\[([\w_.\s]+)\]/", $line, $matches)) {
 				$prefix_name = preg_replace("/\s+/", "_", $matches[1]) . ".";
 			} elseif (preg_match("/^\s*([\w_.]+)\s*=\s*((\"?).*)/", $line, $matches)) {
 				// main match for variable = value part
-				$var = $prefix_name . $matches[1];
+				$var = (string)($prefix_name . $matches[1]);
 				$value = $matches[2];
 				$quotes = $matches[3];
 				// write only if env is not set yet, and write only the first time
-				if (empty($_ENV[$var])) {
+				if (empty($_LOAD_ENV[$var])) {
 					if (!empty($quotes)) {
 						// match greedy for first to last so we move any " if there are
 						if (preg_match('/^"(.*[^\\\])"/U', $value, $matches)) {
@@ -89,9 +108,13 @@ class DotEnv
 							rtrim(substr($value, 0, $pos)) : $value;
 					}
 					// if block is set, we strip line of slashes
-					$_ENV[$var] = $block === true ? stripslashes($value) : $value;
+					$_LOAD_ENV[$var] = $block === true ? stripslashes($value) : $value;
 					// set successful load
-					$status = 0;
+					if ($status != DotEnvLevel::SUCCESS_DOUBLE_KEY) {
+						$status = DotEnvLevel::SUCCESS;
+					}
+				} else {
+					$status = DotEnvLevel::SUCCESS_DOUBLE_KEY;
 				}
 			} elseif ($block === true) {
 				// read line until there is a unescaped "
@@ -102,15 +125,22 @@ class DotEnv
 					$line = $matches[1];
 				}
 				// just be sure it is init before we fill
-				if (!isset($_ENV[$var])) {
-					$_ENV[$var] = '';
-				} elseif (!is_string($_ENV[$var])) {
+				if (!isset($_LOAD_ENV[$var])) {
+					$_LOAD_ENV[$var] = '';
+				} elseif (!is_string($_LOAD_ENV[$var])) {
 					// if this is not string, skip
 					continue;
 				}
 				// strip line of slashes
-				$_ENV[$var] .= stripslashes($line);
+				$_LOAD_ENV[$var] .= stripslashes($line);
 			}
+		}
+		if ($_LOAD_ENV) {
+			// merge loaded env into $_ENV
+			if (array_intersect_key($_LOAD_ENV, $_ENV)) {
+				$status = DotEnvLevel::SUCCESS_ENV_EXIST_SKIP;
+			}
+			$_ENV = $_ENV + $_LOAD_ENV;
 		}
 		fclose($fp);
 		return $status;

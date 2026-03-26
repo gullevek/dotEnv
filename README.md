@@ -18,7 +18,7 @@ Create a file like below
 
 ```php
 require '../vendor/autoload.php';
-gullevek\dotEnv\DotEnv::readEnvFile(__DIR__);
+$status = gullevek\dotEnv\DotEnv::readEnvFile(__DIR__);
 ```
 
 All data will be in the `$_ENV` array
@@ -33,6 +33,39 @@ Second parameter is file name override. Default is `.env`
 Data is loaded into _ENV only.
 
 If there is already an entry in _ENV then it will not be overwritten.
+
+## Errors
+
+The `readEnvFile` will return a DotEnvLevel status message
+
+- `SUCCESS`: load successful
+- `SUCCESS_DOUBLE_KEY`: load successful, but some keys where double in the file
+- `SUCCESS_ENV_EXIST_SKIP`: load successful, but some keys already existed in the _ENV array
+- `SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP`: load successful, but we have double keys and some keys already existed in the _ENV array
+- `WARNING_FILE_LOADED_NO_DATA`: file exists, but no data
+- `ERROR_FILE_NOT_FOUND`: file does not exist
+- `ERROR_FILE_NOT_READABLE`: file exists, but not readable
+- `ERROR_FILE_OPEN_FAILED`: file eixts, but cannot open
+
+## Exceptions
+
+Optional the method can be set to throw exceptions for file reading issuses by setting "throw_exceptions" to true
+
+```php
+require '../vendor/autoload.php';
+
+use gullevek\dotEnv\Exceptions;
+
+try {
+    $status = gullevek\dotEnv\DotEnv::readEnvFile(throw_exceptions: true);
+} catch (Exceptions\DotEnvFileNotFoundException $e) {
+    // file not found
+} catch (Exceptions\DotEnvFileNotReadableException $e) {
+    // file not readable
+} catch (Exception\DotEnvFileOpenFailedException $e) {
+    // file open failed
+}
+```
 
 ## .env file example
 

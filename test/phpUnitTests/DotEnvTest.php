@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace tests;
 
+use gullevek\dotEnv\Levels\DotEnvLevel;
+use gullevek\dotEnv\Exceptions;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -107,14 +109,16 @@ final class DotEnvTest extends TestCase
 			'default' => [
 				'folder' => null,
 				'file' => null,
-				'expected_status' => 3,
+				'expected_status' => DotEnvLevel::ERROR_FILE_NOT_FOUND->value,
+				'expected_status_level' => DotEnvLevel::ERROR_FILE_NOT_FOUND,
 				'expected_env' => [],
 				'chmod' => null,
 			],
 			'cannot open file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'cannot_read.env',
-				'expected_status' => 2,
+				'expected_status' => DotEnvLevel::ERROR_FILE_NOT_READABLE->value,
+				'expected_status_level' => DotEnvLevel::ERROR_FILE_NOT_READABLE,
 				'expected_env' => [],
 				// 0000
 				'chmod' => '100000',
@@ -122,7 +126,8 @@ final class DotEnvTest extends TestCase
 			'empty file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'empty.env',
-				'expected_status' => 1,
+				'expected_status' => DotEnvLevel::WARNING_FILE_LOADED_NO_DATA->value,
+				'expected_status_level' => DotEnvLevel::WARNING_FILE_LOADED_NO_DATA,
 				'expected_env' => [],
 				// 0664
 				'chmod' => '100664',
@@ -130,7 +135,8 @@ final class DotEnvTest extends TestCase
 			'override all' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'test.env',
-				'expected_status' => 0,
+				'expected_status' => DotEnvLevel::SUCCESS_DOUBLE_KEY->value,
+				'expected_status_level' => DotEnvLevel::SUCCESS_DOUBLE_KEY,
 				'expected_env' => $dot_env_content,
 				// 0664
 				'chmod' => '100664',
@@ -138,7 +144,8 @@ final class DotEnvTest extends TestCase
 			'override directory' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => null,
-				'expected_status' => 0,
+				'expected_status' => DotEnvLevel::SUCCESS_DOUBLE_KEY->value,
+				'expected_status_level' => DotEnvLevel::SUCCESS_DOUBLE_KEY,
 				'expected_env' => $dot_env_content,
 				'chmod' => null,
 			],
@@ -151,6 +158,7 @@ final class DotEnvTest extends TestCase
 	 * @param  string|null $folder
 	 * @param  string|null $file
 	 * @param  int         $expected_status
+	 * @param  int         $expected_status_level
 	 * @param  array       $expected_env
 	 * @param  string|null $chmod
 	 * @return void
@@ -162,6 +170,7 @@ final class DotEnvTest extends TestCase
 		?string $folder,
 		?string $file,
 		int $expected_status,
+		DotEnvLevel $expected_status_level,
 		array $expected_env,
 		?string $chmod
 	): void {
@@ -199,8 +208,13 @@ final class DotEnvTest extends TestCase
 		}
 		$this->assertEquals(
 			$expected_status,
-			$status,
+			$status->value,
 			'Assert returned status equal'
+		);
+		$this->assertEquals(
+			$expected_status_level,
+			$status,
+			'Assert returned status level equal'
 		);
 		// now assert read data
 		$this->assertEquals(
@@ -212,6 +226,88 @@ final class DotEnvTest extends TestCase
 		if ($old_chmod !== null) {
 			chmod($folder . DIRECTORY_SEPARATOR . $file, $old_chmod);
 		}
+	}
+
+	#[Test]
+	#[TestDox('Test for successful load with no double entries')]
+	public function testReadEnvFileNoDoubleEntries(): void
+	{
+		// reset $_ENV for clean compare
+		$_ENV = [];
+		// read file first time
+		$status1 = \gullevek\dotEnv\DotEnv::readEnvFile(
+			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+			'test_clean.env'
+		);
+		// read file second time
+		$status2 = \gullevek\dotEnv\DotEnv::readEnvFile(
+			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+			'test_clean.env'
+		);
+		$this->assertEquals(
+			DotEnvLevel::SUCCESS,
+			$status1,
+			'Assert first load status level equal'
+		);
+		$this->assertEquals(
+			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
+			$status2,
+			'Assert second load status level equal'
+		);
+	}
+
+	#[Test]
+	#[TestDox('Test for exceptions thrown')]
+	public function testReadEnvFileExceptions(): void
+	{
+		// file not found
+		try {
+			\gullevek\dotEnv\DotEnv::readEnvFile(
+				__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+				'not_existing.env',
+				throw_exception: true
+			);
+			$this->fail('Expected DotEnvFileNotFoundException was not thrown');
+		} catch (Exceptions\DotEnvFileNotFoundException $e) {
+			$this->assertStringContainsString(
+				'File not found',
+				$e->getMessage(),
+				'Assert exception message contains "File not found"'
+			);
+		}
+		try {
+			\gullevek\dotEnv\DotEnv::readEnvFile(
+				__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+				'cannot_read.env',
+				throw_exception: true
+			);
+			$this->fail('Expected DotEnvFileNotReadableException was not thrown');
+		} catch (Exceptions\DotEnvFileNotReadableException $e) {
+			$this->assertStringContainsString(
+				'File not readable',
+				$e->getMessage(),
+				'Assert exception message contains "File not readable"'
+			);
+		} catch (Exceptions\DotEnvFileOpenFailedException $e) {
+			$this->assertStringContainsString(
+				'Open failed',
+				$e->getMessage(),
+				'Assert exception message contains "Open failed"'
+			);
+			return;
+		}
+	}
+
+	/**
+	 * Test comment char
+	 *
+	 * @return void
+	 */
+	#[Test]
+	#[TestDox('Test that comment char is #')]
+	public function testDotEnvCommentChar(): void
+	{
+		$this->assertEquals('#', \gullevek\dotEnv\DotEnv::COMMENT_CHAR, 'Comment character should be #');
 	}
 }
 
