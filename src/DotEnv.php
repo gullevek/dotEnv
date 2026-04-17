@@ -147,13 +147,17 @@ class DotEnv
 			return DotEnvLevel::ERROR_FILE_NOT_READABLE;
 		}
 		// open file
-		$fp = fopen($env_file_target, 'r');
-		// set to readable but not yet any data loaded
+		if (($fp = fopen($env_file_target, 'r')) === false) {
+			if ($throw_exception) {
+				throw new Exceptions\DotEnvFileOpenFailedException("Open failed: " . $env_file_target);
+			}
+			return DotEnvLevel::ERROR_FILE_OPEN_FAILED;
+		}
 		$status = DotEnvLevel::WARNING_FILE_LOADED_NO_DATA;
 		$block = false;
 		$var = '';
 		$prefix_name = '';
-		/** @var array<string,mixed> */
+		/** @var array<string,string> */
 		$_LOAD_ENV = [];
 		while (($line = fgets($fp)) !== false) {
 			// [] block must be a single line, or it will be ignored
