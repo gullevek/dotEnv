@@ -2,6 +2,7 @@ name: PHPstan and PHPunit CI
 run-name: ${{ github.actor}} runs PHPstan and PHPunit CI
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
