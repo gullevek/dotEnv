@@ -147,12 +147,7 @@ class DotEnv
 			return DotEnvLevel::ERROR_FILE_NOT_READABLE;
 		}
 		// open file
-		if (($fp = fopen($env_file_target, 'r')) === false) {
-			if ($throw_exception) {
-				throw new Exceptions\DotEnvFileOpenFailedException("Open failed: " . $env_file_target);
-			}
-			return DotEnvLevel::ERROR_FILE_OPEN_FAILED;
-		}
+		$fp = fopen($env_file_target, 'r');
 		// set to readable but not yet any data loaded
 		$status = DotEnvLevel::WARNING_FILE_LOADED_NO_DATA;
 		$block = false;
@@ -205,13 +200,6 @@ class DotEnv
 					$block = false;
 					// strip ending " and EVERYTHING that follows after that
 					$line = $matches[1];
-				}
-				// just be sure it is init before we fill
-				if (!isset($_LOAD_ENV[$var])) {
-					$_LOAD_ENV[$var] = '';
-				} elseif (!is_string($_LOAD_ENV[$var])) {
-					// if this is not string, skip
-					continue;
 				}
 				// strip line of slashes
 				$_LOAD_ENV[$var] .= stripslashes($line);

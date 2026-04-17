@@ -15,11 +15,11 @@ enum DotEnvLevel: int
 {
 	case ERROR_FILE_NOT_FOUND = -1;
 	case ERROR_FILE_NOT_READABLE = -2;
-	case ERROR_FILE_OPEN_FAILED = -3;
+	// case ERROR_FILE_OPEN_FAILED = -3;
 	case SUCCESS = 0;
 	case SUCCESS_DOUBLE_KEY = 1;
 	case SUCCESS_ENV_EXIST_SKIP = 2;
-	case SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP = 3;
+	// case SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP = 3;
 	case WARNING_FILE_LOADED_NO_DATA = 10;
 
 	/**
@@ -43,13 +43,13 @@ enum DotEnvLevel: int
 		return match ($level) {
 			// errors
 			self::ERROR_FILE_NOT_READABLE => 'File not readable',
-			self::ERROR_FILE_OPEN_FAILED => 'File open failed',
 			self::ERROR_FILE_NOT_FOUND => 'File not found',
+			// self::ERROR_FILE_OPEN_FAILED => 'File open failed',
 			// success
 			self::SUCCESS => 'Success',
 			self::SUCCESS_DOUBLE_KEY => 'Partial loaded',
 			self::SUCCESS_ENV_EXIST_SKIP => 'Environment variable exists, skipped',
-			self::SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP => 'Partial loaded, environment variable exists, skipped',
+			// self::SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP => 'Partial loaded, environment variable exists, skipped',
 			// success but no data loaded
 			self::WARNING_FILE_LOADED_NO_DATA => 'File loaded, no data or already loaded',
 		};

@@ -44,11 +44,11 @@ final class DotEnvLevelTest extends TestCase
 		return [
 			[-1, \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_FOUND],
 			[-2, \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_READABLE],
-			[-3, \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_OPEN_FAILED],
+			// [-3, \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_OPEN_FAILED],
 			[0, \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS],
 			[1, \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY],
 			[2, \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_ENV_EXIST_SKIP],
-			[3, \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP],
+			// [3, \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP],
 			[10, \gullevek\dotEnv\Levels\DotEnvLevel::WARNING_FILE_LOADED_NO_DATA],
 		];
 	}

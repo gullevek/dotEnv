@@ -16,6 +16,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
  */
 #[TestDox("\gullevek\DotEnv method tests")]
 #[CoversClass(\gullevek\dotEnv\DotEnv::class)]
+#[CoversMethod(\gullevek\dotEnv\DotEnv::class, 'loadOutsideGetEnv')]
+#[CoversMethod(\gullevek\dotEnv\DotEnv::class, 'getLastReadEnvFileErrors')]
 #[CoversMethod(\gullevek\dotEnv\DotEnv::class, 'readEnvFile')]
 final class DotEnvTest extends TestCase
 {
@@ -66,7 +68,6 @@ final class DotEnvTest extends TestCase
 	 */
 	#[Test]
 	#[TestDox('Test loading outside environment variables')]
-	// #[DataProvider('loadOutsideGetEnv')]
 	public function testLoadOutsideGetEnv(): void
 	{
 		// loading all hast to have above env set
@@ -77,7 +78,7 @@ final class DotEnvTest extends TestCase
 		}
 		// load just one, only one should be set
 		$_ENV = [];
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(['DOTENV_PHPUNIT_A']);
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(['DOTENV_PHPUNIT_A', 'DOES_NOT_EXIST']);
 		$this->assertArrayHasKey('DOTENV_PHPUNIT_A', $_ENV, 'Missing DOTENV_PHPUNIT_A');
 		$this->assertArrayNotHasKey('DOTENV_PHPUNIT_B', $_ENV, 'Has DOTENV_PHPUNIT_B');
 		$this->assertArraysAreIdenticalIgnoringOrder(
@@ -143,6 +144,23 @@ final class DotEnvTest extends TestCase
 			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
 			$_ENV['DOTENV_PHPUNIT_A'],
 			'Should match'
+		);
+		$this->assertNotEquals(
+			'InternalSet_A',
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should not match'
+		);
+		$this->assertEquals(
+			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should match'
+		);
+		// some, but we only load one
+		$_ENV = [];
+		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(
+			['DOTENV_PHPUNIT_A'],
+			merge_flag: \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING
 		);
 		// internal set, external set, different load, merge overwrite is ignored
 		$_ENV = [];
