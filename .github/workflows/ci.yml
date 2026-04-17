@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: php-actions/composer@v6
+        with:
+          php_version: 8.5
         env:
           COMPOSER_ROOT_VERSION: dev-master
       - name: "Restore result cache"
