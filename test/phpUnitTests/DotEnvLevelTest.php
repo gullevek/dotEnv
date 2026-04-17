@@ -63,7 +63,7 @@ final class DotEnvLevelTest extends TestCase
 	#[Test]
 	#[TestDox(' [$_dataName]')]
 	#[DataProvider('providerDotEnvLevels')]
-	public function testDotEnvLevels(int $expected, \gullevek\dotEnv\Levels\DotEnvLevel $level): void
+	public function testDotEnvLevels(int $expected, mixed $level): void
 	{
 		$this->assertSame($expected, $level->value);
 		$this->assertSame($level, \gullevek\dotEnv\Levels\DotEnvLevel::fromValue($expected));

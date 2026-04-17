@@ -276,7 +276,7 @@ final class DotEnvTest extends TestCase
 		?string $folder,
 		?string $file,
 		int $expected_status,
-		\gullevek\dotEnv\Levels\DotEnvLevel $expected_status_level,
+		mixed $expected_status_level,
 		array $expected_env,
 		?string $chmod
 	): void {
