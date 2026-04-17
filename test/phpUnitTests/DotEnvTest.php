@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace tests;
 
-use gullevek\dotEnv\DotEnv;
-use gullevek\dotEnv\Levels\DotEnvLevel;
-use gullevek\dotEnv\Exceptions;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -18,8 +15,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Test class for DotEnv
  */
 #[TestDox("\gullevek\DotEnv method tests")]
-#[CoversClass(DotEnv::class)]
-#[CoversMethod(DotEnv::class, 'readEnvFile')]
+#[CoversClass(\gullevek\dotEnv\DotEnv::class)]
+#[CoversMethod(\gullevek\dotEnv\DotEnv::class, 'readEnvFile')]
 final class DotEnvTest extends TestCase
 {
 	/** @var array<string,string> */
@@ -74,13 +71,13 @@ final class DotEnvTest extends TestCase
 	{
 		// loading all hast to have above env set
 		$_ENV = [];
-		DotEnv::loadOutsideGetEnv();
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv();
 		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
 			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
 		}
 		// load just one, only one should be set
 		$_ENV = [];
-		DotEnv::loadOutsideGetEnv(['DOTENV_PHPUNIT_A']);
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(['DOTENV_PHPUNIT_A']);
 		$this->assertArrayHasKey('DOTENV_PHPUNIT_A', $_ENV, 'Missing DOTENV_PHPUNIT_A');
 		$this->assertArrayNotHasKey('DOTENV_PHPUNIT_B', $_ENV, 'Has DOTENV_PHPUNIT_B');
 		$this->assertArraysAreIdenticalIgnoringOrder(
@@ -89,7 +86,7 @@ final class DotEnvTest extends TestCase
 		);
 		// load both, only the two should be set
 		$_ENV = [];
-		DotEnv::loadOutsideGetEnv(array_keys(self::OUTSIDE_SET));
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(array_keys(self::OUTSIDE_SET));
 		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
 			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
 		}
@@ -100,7 +97,7 @@ final class DotEnvTest extends TestCase
 		// internal set, external set, default will be overwritten
 		$_ENV = [];
 		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
-		DotEnv::loadOutsideGetEnv();
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv();
 		$this->assertNotEquals(
 			'InternalSet_A',
 			$_ENV['DOTENV_PHPUNIT_A'],
@@ -114,7 +111,7 @@ final class DotEnvTest extends TestCase
 		// internal set, external set, merge with existing, do not overwrite
 		$_ENV = [];
 		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
-		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_KEEP_EXISTING);
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_KEEP_EXISTING);
 		$this->assertNotEquals(
 			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
 			$_ENV['DOTENV_PHPUNIT_A'],
@@ -128,7 +125,7 @@ final class DotEnvTest extends TestCase
 		// internal set, external set, different load, merge keep is ignored
 		$_ENV = [];
 		$_ENV['DOTENV_SOMEOTHER_A'] = 'InternalSet_A';
-		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_KEEP_EXISTING);
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_KEEP_EXISTING);
 		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
 			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
 		}
@@ -136,7 +133,7 @@ final class DotEnvTest extends TestCase
 		// interal set, external set, merge with existing, overwrite
 		$_ENV = [];
 		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
-		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_OVERWRITE_EXISTING);
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING);
 		$this->assertNotEquals(
 			'InternalSet_A',
 			$_ENV['DOTENV_PHPUNIT_A'],
@@ -150,7 +147,7 @@ final class DotEnvTest extends TestCase
 		// internal set, external set, different load, merge overwrite is ignored
 		$_ENV = [];
 		$_ENV['DOTENV_SOMEOTHER_A'] = 'InternalSet_A';
-		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_OVERWRITE_EXISTING);
+		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING);
 		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
 			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
 		}
@@ -217,16 +214,16 @@ final class DotEnvTest extends TestCase
 			'default' => [
 				'folder' => null,
 				'file' => null,
-				'expected_status' => DotEnvLevel::ERROR_FILE_NOT_FOUND->value,
-				'expected_status_level' => DotEnvLevel::ERROR_FILE_NOT_FOUND,
+				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_FOUND->value,
+				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_FOUND,
 				'expected_env' => [],
 				'chmod' => null,
 			],
 			'cannot open file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'cannot_read.env',
-				'expected_status' => DotEnvLevel::ERROR_FILE_NOT_READABLE->value,
-				'expected_status_level' => DotEnvLevel::ERROR_FILE_NOT_READABLE,
+				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_READABLE->value,
+				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_READABLE,
 				'expected_env' => [],
 				// 0000
 				'chmod' => '100000',
@@ -234,8 +231,8 @@ final class DotEnvTest extends TestCase
 			'empty file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'empty.env',
-				'expected_status' => DotEnvLevel::WARNING_FILE_LOADED_NO_DATA->value,
-				'expected_status_level' => DotEnvLevel::WARNING_FILE_LOADED_NO_DATA,
+				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::WARNING_FILE_LOADED_NO_DATA->value,
+				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::WARNING_FILE_LOADED_NO_DATA,
 				'expected_env' => [],
 				// 0664
 				'chmod' => '100664',
@@ -243,8 +240,8 @@ final class DotEnvTest extends TestCase
 			'override all' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'test.env',
-				'expected_status' => DotEnvLevel::SUCCESS_DOUBLE_KEY->value,
-				'expected_status_level' => DotEnvLevel::SUCCESS_DOUBLE_KEY,
+				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY->value,
+				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY,
 				'expected_env' => $dot_env_content,
 				// 0664
 				'chmod' => '100664',
@@ -252,8 +249,8 @@ final class DotEnvTest extends TestCase
 			'override directory' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => null,
-				'expected_status' => DotEnvLevel::SUCCESS_DOUBLE_KEY->value,
-				'expected_status_level' => DotEnvLevel::SUCCESS_DOUBLE_KEY,
+				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY->value,
+				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY,
 				'expected_env' => $dot_env_content,
 				'chmod' => null,
 			],
@@ -279,7 +276,7 @@ final class DotEnvTest extends TestCase
 		?string $folder,
 		?string $file,
 		int $expected_status,
-		DotEnvLevel $expected_status_level,
+		\gullevek\dotEnv\Levels\DotEnvLevel $expected_status_level,
 		array $expected_env,
 		?string $chmod
 	): void {
@@ -309,11 +306,11 @@ final class DotEnvTest extends TestCase
 			chmod($folder . DIRECTORY_SEPARATOR . $file, octdec($chmod));
 		}
 		if ($folder !== null && $file !== null) {
-			$status = DotEnv::readEnvFile($folder, $file);
+			$status = \gullevek\dotEnv\DotEnv::readEnvFile($folder, $file);
 		} elseif ($folder !== null) {
-			$status = DotEnv::readEnvFile($folder);
+			$status = \gullevek\dotEnv\DotEnv::readEnvFile($folder);
 		} else {
-			$status = DotEnv::readEnvFile();
+			$status = \gullevek\dotEnv\DotEnv::readEnvFile();
 		}
 		$this->assertEquals(
 			$expected_status,
@@ -331,10 +328,10 @@ final class DotEnvTest extends TestCase
 			$_ENV,
 			'Assert _ENV correct'
 		);
-		if ($status == DotEnvLevel::SUCCESS_DOUBLE_KEY) {
+		if ($status == \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY) {
 			$this->assertArrayHasKey(
-				DotEnvLevel::SUCCESS_DOUBLE_KEY->name,
-				DotEnv::getLastReadEnvFileErrors()
+				\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_DOUBLE_KEY->name,
+				\gullevek\dotEnv\DotEnv::getLastReadEnvFileErrors()
 			);
 		}
 		// if we have file and chmod unset
@@ -359,11 +356,11 @@ final class DotEnvTest extends TestCase
 		];
 		// plain empty test
 		$_ENV = [];
-		$status = DotEnv::readEnvFile(
+		$status = \gullevek\dotEnv\DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env'
 		);
-		if ($status !== DotEnvLevel::SUCCESS) {
+		if ($status !== \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS) {
 			$this->markTestSkipped('Cannot read test_clean.env');
 		}
 		$this->assertArraysAreIdenticalIgnoringOrder(
@@ -374,17 +371,17 @@ final class DotEnvTest extends TestCase
 		$_ENV = [
 			'TEST' => 'Other'
 		];
-		$status = DotEnv::readEnvFile(
+		$status = \gullevek\dotEnv\DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env'
 		);
 		$this->assertEquals(
-			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
+			\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
 			$status
 		);
 		$this->assertArrayHasKey(
-			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
-			DotEnv::getLastReadEnvFileErrors()
+			\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
+			\gullevek\dotEnv\DotEnv::getLastReadEnvFileErrors()
 		);
 		$this->assertEquals(
 			$expected_env['FOOBAR'],
@@ -398,11 +395,11 @@ final class DotEnvTest extends TestCase
 		putenv('TEST=Outside');
 		// plain empty test
 		$_ENV = [];
-		$status = DotEnv::readEnvFile(
+		$status = \gullevek\dotEnv\DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env',
 		);
-		if ($status !== DotEnvLevel::SUCCESS) {
+		if ($status !== \gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS) {
 			$this->markTestSkipped('Cannot read test_clean.env');
 		}
 		$this->assertArraysAreIdenticalIgnoringOrder(
@@ -411,18 +408,18 @@ final class DotEnvTest extends TestCase
 		);
 		// expect TEST to be outside
 		$_ENV = [];
-		$status = DotEnv::readEnvFile(
+		$status = \gullevek\dotEnv\DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env',
 			load_outside_env: true,
 		);
 		$this->assertEquals(
-			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
+			\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
 			$status
 		);
 		$this->assertArrayHasKey(
-			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
-			DotEnv::getLastReadEnvFileErrors()
+			\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
+			\gullevek\dotEnv\DotEnv::getLastReadEnvFileErrors()
 		);
 		$this->assertEquals(
 			$expected_env['FOOBAR'],
@@ -449,29 +446,29 @@ final class DotEnvTest extends TestCase
 		// reset $_ENV for clean compare
 		$_ENV = [];
 		// read file first time
-		$status1 = DotEnv::readEnvFile(
+		$status1 = \gullevek\dotEnv\DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env'
 		);
 		// read file second time
-		$status2 = DotEnv::readEnvFile(
+		$status2 = \gullevek\dotEnv\DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env'
 		);
 		$this->assertEquals(
-			DotEnvLevel::SUCCESS,
+			\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS,
 			$status1,
 			'Assert first load status level equal'
 		);
 		$this->assertEquals(
-			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
+			\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
 			$status2,
 			'Assert second load status level equal'
 		);
 		// check that last erros match
 		$this->assertArrayHasKey(
-			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
-			DotEnv::getLastReadEnvFileErrors()
+			\gullevek\dotEnv\Levels\DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
+			\gullevek\dotEnv\DotEnv::getLastReadEnvFileErrors()
 		);
 		$this->assertArraysAreIdenticalIgnoringOrder(
 			[
@@ -480,7 +477,7 @@ final class DotEnvTest extends TestCase
 					'FOOBAR'
 				]
 			],
-			DotEnv::getLastReadEnvFileErrors()
+			\gullevek\dotEnv\DotEnv::getLastReadEnvFileErrors()
 		);
 	}
 
@@ -495,13 +492,13 @@ final class DotEnvTest extends TestCase
 	{
 		// file not found
 		try {
-			DotEnv::readEnvFile(
+			\gullevek\dotEnv\DotEnv::readEnvFile(
 				__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'not_existing.env',
 				throw_exception: true
 			);
 			$this->fail('Expected DotEnvFileNotFoundException was not thrown');
-		} catch (Exceptions\DotEnvFileNotFoundException $e) {
+		} catch (\gullevek\dotEnv\Exceptions\DotEnvFileNotFoundException $e) {
 			$this->assertStringContainsString(
 				'File not found',
 				$e->getMessage(),
@@ -510,19 +507,19 @@ final class DotEnvTest extends TestCase
 		}
 		try {
 			chmod(__DIR__ . DIRECTORY_SEPARATOR . 'dotenv' . DIRECTORY_SEPARATOR . 'cannot_read.env', octdec('100000'));
-			DotEnv::readEnvFile(
+			\gullevek\dotEnv\DotEnv::readEnvFile(
 				__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'cannot_read.env',
 				throw_exception: true
 			);
 			$this->fail('Expected DotEnvFileNotReadableException was not thrown');
-		} catch (Exceptions\DotEnvFileNotReadableException $e) {
+		} catch (\gullevek\dotEnv\Exceptions\DotEnvFileNotReadableException $e) {
 			$this->assertStringContainsString(
 				'File not readable',
 				$e->getMessage(),
 				'Assert exception message does not contains "File not readable"'
 			);
-		} catch (Exceptions\DotEnvFileOpenFailedException $e) {
+		} catch (\gullevek\dotEnv\Exceptions\DotEnvFileOpenFailedException $e) {
 			$this->assertStringContainsString(
 				'Open failed',
 				$e->getMessage(),
@@ -537,7 +534,7 @@ final class DotEnvTest extends TestCase
 	public function testLoadOutsideGetEnvExceptions(): void
 	{
 		try {
-			DotEnv::loadOutsideGetEnv(merge_flag: 9);
+			\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: 9);
 			$this->fail('Expected InvalidArgumentException was not thrown');
 		} catch (\InvalidArgumentException $e) {
 			$this->assertStringContainsString(
@@ -558,7 +555,7 @@ final class DotEnvTest extends TestCase
 	#[TestDox('Test that comment char is #')]
 	public function testDotEnvCommentChar(): void
 	{
-		$this->assertEquals('#', DotEnv::COMMENT_CHAR, 'Comment character should be #');
+		$this->assertEquals('#', \gullevek\dotEnv\DotEnv::COMMENT_CHAR, 'Comment character should be #');
 	}
 }
 
