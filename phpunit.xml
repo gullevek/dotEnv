@@ -1,8 +1,17 @@
 <?xml version="1.0"?>
-<phpunit colors="true" cacheDirectory=".phpunit.cache">
+<phpunit
+  colors="true"
+  cacheDirectory=".phpunit.cache"
+  bootstrap="test/phpUnitTests/bootstrap.php"
+>
   <testsuites>
     <testsuite name="unit">
       <directory>test/phpUnitTests/</directory>
     </testsuite>
   </testsuites>
+  <source>
+		<include>
+			<directory>./src</directory>
+		</include>
+	</source>
 </phpunit>

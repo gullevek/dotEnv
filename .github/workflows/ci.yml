@@ -15,37 +15,6 @@ on:
       - development
 
 jobs:
-  # ci-tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v6
-  #     - uses: php-actions/composer@v6
-  #       with:
-  #         php_version: 8.5
-  #       env:
-  #         COMPOSER_ROOT_VERSION: dev-master
-  #     - name: "Restore result cache"
-  #       uses: actions/cache/restore@v5
-  #       with:
-  #         path: ./tmp
-  #         key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
-  #         restore-keys: |
-  #           result-cache-v1-${{ matrix.php-version }}-
-  #     - name: PHPStan Static Analysis
-  #       uses: php-actions/phpstan@v3
-  #       with:
-  #         path: src/
-  #         configuration: phpstan.neon
-  #     - name: "Save result cache"
-  #       uses: actions/cache/save@v5
-  #       if: always()
-  #       with:
-  #         path: ./tmp
-  #         key: "result-cache-v1-${{ matrix.php-version }}-${{ github.run_id }}"
-  #         # We need to use phpunit from the self install to get the class paths
-  #     - name: PHPunit Tests
-  #       run: |
-  #         vendor/bin/phpunit
   ci-php-tests:
     runs-on: ubuntu-latest
     steps:
@@ -68,12 +37,12 @@ jobs:
       id: composer-cache
       run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-    - name: Cache dependencies
-      uses: actions/cache@v5
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-        restore-keys: ${{ runner.os }}-composer-
+    # - name: Cache dependencies
+    #   uses: actions/cache@v5
+    #   with:
+    #     path: ${{ steps.composer-cache.outputs.dir }}
+    #     key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+    #     restore-keys: ${{ runner.os }}-composer-
 
     - name: Install dependencies
       run: |
@@ -92,21 +61,21 @@ jobs:
 
     # Must have "./tmp" directory set in configuration
     # if we have "./tmp/phpstan" or anything different adjust the path below
-    - name: "Restore result cache"
-      uses: actions/cache/restore@v5
-      with:
-        path: ./tmp
-        key: "result-cache-${{ github.run_id }}"
-        restore-keys: |
-          result-cache-v1-
+    # - name: "Restore result cache"
+    #   uses: actions/cache/restore@v5
+    #   with:
+    #     path: ./tmp
+    #     key: "result-cache-${{ github.run_id }}"
+    #     restore-keys: |
+    #       result-cache-v1-
     - name: Run PHPStan
       run: phpstan analyse --no-progress --configuration=phpstan.neon
-    - name: "Save result cache"
-      uses: actions/cache/save@v5
-      if: always()
-      with:
-        path: ./tmp
-        key: "result-cache-${{ github.run_id }}"
+    # - name: "Save result cache"
+    #   uses: actions/cache/save@v5
+    #   if: always()
+    #   with:
+    #     path: ./tmp
+    #     key: "result-cache-${{ github.run_id }}"
 
     - name: Test with phpunit
       run: phpunit --coverage-text
