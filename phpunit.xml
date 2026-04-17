@@ -14,9 +14,10 @@
 			<directory>./src</directory>
 		</include>
 	</source>
-  <coverage processUncoveredFiles="true">
+  <coverage>
 		<report>
 			<html outputDirectory="build/coverage-report"/>
+      <text outputFile="php://stdout" showUncoveredFiles="true" showOnlySummary="true"/>
 		</report>
-    </coverage>
+  </coverage>
 </phpunit>
