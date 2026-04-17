@@ -185,4 +185,4 @@ $_ENV["SecitonA.FOOBAR"];
 
 Unit tests have to be run from base folder with
 
-`vendor/bin/phpunit test/phpUnitTests/`
+`vendor/bin/phpunit`

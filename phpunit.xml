@@ -14,4 +14,9 @@
 			<directory>./src</directory>
 		</include>
 	</source>
+  <coverage processUncoveredFiles="true">
+		<report>
+			<html outputDirectory="build/coverage-report"/>
+		</report>
+    </coverage>
 </phpunit>
