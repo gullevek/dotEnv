@@ -18,10 +18,47 @@ Create a file like below
 
 ```php
 require '../vendor/autoload.php';
-$status = gullevek\dotEnv\DotEnv::readEnvFile(__DIR__);
+$status = \gullevek\dotEnv\DotEnv::readEnvFile(__DIR__);
 ```
 
-All data will be in the `$_ENV` array
+All data will be in the `$_ENV` array. Note that existing `$_ENV` data is never overwritten. If this is needed make a copy fo the `$_ENV` file and reset it, or if the data is not needed just reset it.
+
+SUCCESS with problem errors can be read from `DotEnv::getLastReadEnvFileErrors()`
+
+### readEnvFile: Options
+
+```php
+public static function readEnvFile(
+    string $path = __DIR__,
+    string $env_file = '.env',
+    bool $load_outside_env = false,
+    bool $throw_exception = false,
+): DotEnvLevel
+```
+
+- `path`: Where to look for the env file, default `__DIR__`
+- `env_file`: File name to load, default `.env`
+- `load_outside_env`: If set to true, will first load via getenv all the names found in the env file, will return "SUCCESS_ENV_EXIST_SKIP" if ther is an existing variable set already
+- `throw_exception`: instead of returining DotEnvLevel will throw exceptions, see Exception
+
+## read outside environment data
+
+Normal environment data is not loaded into the `$_ENV` variable. If this is needed this can be done with `\gullevek\dotEnv\DotEnv::loadOutsideGetEnv()`
+
+### loadOutsideGetEnv: Options
+
+```php
+public static function loadOutsideGetEnv(
+    array $env_list = [],
+    int $merge_flag = self::OVERWRITE
+): void
+```
+
+- `env_list`: if set only those environment variables will be loaded, case sensitive
+- `merge_flag`: defines how existing data is handled, default is to overwrite all of it
+  - `OVERWRITE`: overwrite all set data in `$_ENV`
+  - `MERGE_KEEP_EXISTING`: merge but keep data with the same key
+  - `MERGE_OVERWRITE_EXISTING`: merge but overwrite data with the same key
 
 ## How it works
 
@@ -46,6 +83,23 @@ The `readEnvFile` will return a DotEnvLevel status message
 - `ERROR_FILE_NOT_FOUND`: file does not exist
 - `ERROR_FILE_NOT_READABLE`: file exists, but not readable
 - `ERROR_FILE_OPEN_FAILED`: file eixts, but cannot open
+
+### Reading SUCESS_* status block errors
+
+If we have anything other than plain SUCCESS we can check the keys that had errors with `DotEnv::getLastReadEnvFileErrors()`. The returned array key is the DotEnvLevel name as string and has a list of all loaded keys that fall into this error.
+
+Example:
+
+```txt
+Array
+(
+    [SUCCESS_ENV_EXIST_SKIP] => Array
+        (
+            [0] => TEST
+            [1] => FOOBAR
+        )
+)
+```
 
 ## Exceptions
 

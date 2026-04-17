@@ -44,7 +44,8 @@ $status = DotEnv::readEnvFile(__DIR__ . DIRECTORY_SEPARATOR . 'env');
 print "<b>B STATUS</b>: "
 	. $status->name . " | "
 	. $status->value . " | "
-	. DotEnvLevel::errorMessage($status)
+	. DotEnvLevel::errorMessage($status) . ' | '
+	. '<pre>' . print_r(DotEnv::getLastReadEnvFileErrors(), true) . '</pre>'
 	. "<br>";
 print "<b>B ENV</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
 
@@ -52,7 +53,8 @@ $status = gullevek\dotEnv\DotEnv::readEnvFile(__DIR__ . DIRECTORY_SEPARATOR . 'e
 print "<b>C STATUS</b>: "
 	. $status->name . " | "
 	. $status->value . " | "
-	. DotEnvLevel::errorMessage($status)
+	. DotEnvLevel::errorMessage($status) . ' | '
+	. '<pre>' . print_r(DotEnv::getLastReadEnvFileErrors(), true) . '</pre>'
 	. "<br>";
 print "<b>C ENV</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
 
@@ -72,5 +74,54 @@ print "<b>E STATUS</b>: "
 	. DotEnvLevel::errorMessage($status)
 	. "<br>";
 print "<b>E ENV</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+
+putenv("TEST_FROM_PHP=*OUTSIDE SET*");
+$status = DotEnv::readEnvFile(__DIR__ . DIRECTORY_SEPARATOR . 'env', 'test_existing.env');
+print "<b>F STATUS</b>: "
+	. $status->name . " | "
+	. $status->value . " | "
+	. DotEnvLevel::errorMessage($status)
+	. "<br>";
+print "<b>F ENV</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+$_ENV = [];
+$status = DotEnv::readEnvFile(
+	__DIR__ . DIRECTORY_SEPARATOR . 'env',
+	'test_existing.env',
+	load_outside_env: true
+);
+print "<b>G STATUS</b>: "
+	. $status->name . " | "
+	. $status->value . " | "
+	. DotEnvLevel::errorMessage($status)
+	. "<br>";
+print "<b>G ENV</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_KEEP_EXISTING);
+print "<b>POST LOAD ENV KEEP_EXISTING</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+$_ENV = [];
+$status = DotEnv::readEnvFile(
+	__DIR__ . DIRECTORY_SEPARATOR . 'env',
+	'test_existing.env',
+);
+print "<b>H STATUS</b>: "
+	. $status->name . " | "
+	. $status->value . " | "
+	. DotEnvLevel::errorMessage($status)
+	. "<br>";
+print "<b>H ENV</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_OVERWRITE_EXISTING);
+print "<b>POST LOAD ENV OVERWRITE_EXISTING</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+$_ENV = [];
+DotEnv::loadOutsideGetEnv();
+print "<b>POST LOAD ENV (default)</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+$_ENV = [];
+DotEnv::loadOutsideGetEnv(['USER', 'HOME', 'PHP_ENV_TEST', 'TEST_FROM_PHP']);
+print "<b>POST LOAD ENV C</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
+
+try {
+	DotEnv::loadOutsideGetEnv(merge_flag: 9);
+} catch (\InvalidArgumentException $e) {
+	print "loadOutsideGetEnv Error: " . $e->getMessage() . "<br>";
+}
+
 
 // __END__

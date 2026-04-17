@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace tests;
 
+use gullevek\dotEnv\DotEnv;
 use gullevek\dotEnv\Levels\DotEnvLevel;
 use gullevek\dotEnv\Exceptions;
 use PHPUnit\Framework\TestCase;
@@ -17,11 +18,18 @@ use PHPUnit\Framework\Attributes\DataProvider;
  * Test class for DotEnv
  */
 #[TestDox("\gullevek\DotEnv method tests")]
-#[CoversClass(\gullevek\dotEnv\DotEnv::class)]
-#[CoversMethod(\gullevek\dotEnv\DotEnv::class, 'readEnvFile')]
+#[CoversClass(DotEnv::class)]
+#[CoversMethod(DotEnv::class, 'readEnvFile')]
 final class DotEnvTest extends TestCase
 {
+	/** @var array<string,string> */
+	public const OUTSIDE_SET = [
+		'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+		'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+	];
+
 	/**
+	 * MARK: setup
 	 * setup the .env files before test run
 	 *
 	 * @return void
@@ -49,7 +57,107 @@ final class DotEnvTest extends TestCase
 				copy($file_content, $env_file);
 			}
 		}
+		putenv("DOTENV_PHPUNIT_A=EnvVarPhpUnit_A");
+		putenv("DOTENV_PHPUNIT_B=EnvVarPhpUnit_B");
 	}
+
+	/**
+	 * MARK: loadOutsideGetEnv
+	 * Tests for reading getenv data into $_ENV
+	 *
+	 * @return void
+	 */
+	#[Test]
+	#[TestDox('Test loading outside environment variables')]
+	// #[DataProvider('loadOutsideGetEnv')]
+	public function testLoadOutsideGetEnv(): void
+	{
+		// loading all hast to have above env set
+		$_ENV = [];
+		DotEnv::loadOutsideGetEnv();
+		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
+			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
+		}
+		// load just one, only one should be set
+		$_ENV = [];
+		DotEnv::loadOutsideGetEnv(['DOTENV_PHPUNIT_A']);
+		$this->assertArrayHasKey('DOTENV_PHPUNIT_A', $_ENV, 'Missing DOTENV_PHPUNIT_A');
+		$this->assertArrayNotHasKey('DOTENV_PHPUNIT_B', $_ENV, 'Has DOTENV_PHPUNIT_B');
+		$this->assertArraysAreIdenticalIgnoringOrder(
+			['DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A'],
+			$_ENV
+		);
+		// load both, only the two should be set
+		$_ENV = [];
+		DotEnv::loadOutsideGetEnv(array_keys(self::OUTSIDE_SET));
+		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
+			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
+		}
+		$this->assertArraysAreIdenticalIgnoringOrder(
+			self::OUTSIDE_SET,
+			$_ENV
+		);
+		// internal set, external set, default will be overwritten
+		$_ENV = [];
+		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
+		DotEnv::loadOutsideGetEnv();
+		$this->assertNotEquals(
+			'InternalSet_A',
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should not match'
+		);
+		$this->assertEquals(
+			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should match'
+		);
+		// internal set, external set, merge with existing, do not overwrite
+		$_ENV = [];
+		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
+		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_KEEP_EXISTING);
+		$this->assertNotEquals(
+			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should not match'
+		);
+		$this->assertEquals(
+			'InternalSet_A',
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should match'
+		);
+		// internal set, external set, different load, merge keep is ignored
+		$_ENV = [];
+		$_ENV['DOTENV_SOMEOTHER_A'] = 'InternalSet_A';
+		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_KEEP_EXISTING);
+		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
+			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
+		}
+		$this->assertEquals('InternalSet_A', $_ENV['DOTENV_SOMEOTHER_A']);
+		// interal set, external set, merge with existing, overwrite
+		$_ENV = [];
+		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
+		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_OVERWRITE_EXISTING);
+		$this->assertNotEquals(
+			'InternalSet_A',
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should not match'
+		);
+		$this->assertEquals(
+			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
+			$_ENV['DOTENV_PHPUNIT_A'],
+			'Should match'
+		);
+		// internal set, external set, different load, merge overwrite is ignored
+		$_ENV = [];
+		$_ENV['DOTENV_SOMEOTHER_A'] = 'InternalSet_A';
+		DotEnv::loadOutsideGetEnv(merge_flag: DotEnv::MERGE_OVERWRITE_EXISTING);
+		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
+			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
+		}
+		$this->assertEquals('InternalSet_A', $_ENV['DOTENV_SOMEOTHER_A']);
+	}
+
+	// MARK: readEnvFile
 
 	/**
 	 * Undocumented function
@@ -153,6 +261,7 @@ final class DotEnvTest extends TestCase
 	}
 
 	/**
+	 * MARK: general readEnvFile
 	 * test read .env file
 	 *
 	 * @param  string|null $folder
@@ -200,11 +309,11 @@ final class DotEnvTest extends TestCase
 			chmod($folder . DIRECTORY_SEPARATOR . $file, octdec($chmod));
 		}
 		if ($folder !== null && $file !== null) {
-			$status = \gullevek\dotEnv\DotEnv::readEnvFile($folder, $file);
+			$status = DotEnv::readEnvFile($folder, $file);
 		} elseif ($folder !== null) {
-			$status = \gullevek\dotEnv\DotEnv::readEnvFile($folder);
+			$status = DotEnv::readEnvFile($folder);
 		} else {
-			$status = \gullevek\dotEnv\DotEnv::readEnvFile();
+			$status = DotEnv::readEnvFile();
 		}
 		$this->assertEquals(
 			$expected_status,
@@ -222,25 +331,130 @@ final class DotEnvTest extends TestCase
 			$_ENV,
 			'Assert _ENV correct'
 		);
+		if ($status == DotEnvLevel::SUCCESS_DOUBLE_KEY) {
+			$this->assertArrayHasKey(
+				DotEnvLevel::SUCCESS_DOUBLE_KEY->name,
+				DotEnv::getLastReadEnvFileErrors()
+			);
+		}
 		// if we have file and chmod unset
 		if ($old_chmod !== null) {
 			chmod($folder . DIRECTORY_SEPARATOR . $file, $old_chmod);
 		}
 	}
 
+	/**
+	 * MARK: external load readEnvFile
+	 * set env load with pre-set entries and overwrite
+	 *
+	 * @return void
+	 */
 	#[Test]
-	#[TestDox('Test for successful load with no double entries')]
+	#[TestDox('readEnvFile tests with outside enviornment variable load')]
+	public function testReadEnvFileOutsideEnvironmentVars(): void
+	{
+		$expected_env = [
+			'TEST' => 'Abc',
+			'FOOBAR' => '123',
+		];
+		// plain empty test
+		$_ENV = [];
+		$status = DotEnv::readEnvFile(
+			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+			'test_clean.env'
+		);
+		if ($status !== DotEnvLevel::SUCCESS) {
+			$this->markTestSkipped('Cannot read test_clean.env');
+		}
+		$this->assertArraysAreIdenticalIgnoringOrder(
+			$expected_env,
+			$_ENV
+		);
+		// env set in $_ENV
+		$_ENV = [
+			'TEST' => 'Other'
+		];
+		$status = DotEnv::readEnvFile(
+			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+			'test_clean.env'
+		);
+		$this->assertEquals(
+			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
+			$status
+		);
+		$this->assertArrayHasKey(
+			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
+			DotEnv::getLastReadEnvFileErrors()
+		);
+		$this->assertEquals(
+			$expected_env['FOOBAR'],
+			$_ENV['FOOBAR']
+		);
+		$this->assertEquals(
+			'Other',
+			$_ENV['TEST']
+		);
+		// put env preloaded but no pre load is ok
+		putenv('TEST=Outside');
+		// plain empty test
+		$_ENV = [];
+		$status = DotEnv::readEnvFile(
+			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+			'test_clean.env',
+		);
+		if ($status !== DotEnvLevel::SUCCESS) {
+			$this->markTestSkipped('Cannot read test_clean.env');
+		}
+		$this->assertArraysAreIdenticalIgnoringOrder(
+			$expected_env,
+			$_ENV
+		);
+		// expect TEST to be outside
+		$_ENV = [];
+		$status = DotEnv::readEnvFile(
+			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
+			'test_clean.env',
+			load_outside_env: true,
+		);
+		$this->assertEquals(
+			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP,
+			$status
+		);
+		$this->assertArrayHasKey(
+			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
+			DotEnv::getLastReadEnvFileErrors()
+		);
+		$this->assertEquals(
+			$expected_env['FOOBAR'],
+			$_ENV['FOOBAR']
+		);
+		$this->assertEquals(
+			'Outside',
+			$_ENV['TEST']
+		);
+		// p
+	}
+
+	// MARK: exceptions
+
+	/**
+	 * test no double entries exception
+	 *
+	 * @return void
+	 */
+	#[Test]
+	#[TestDox('Test for successful load with no double entries in readEnvFile')]
 	public function testReadEnvFileNoDoubleEntries(): void
 	{
 		// reset $_ENV for clean compare
 		$_ENV = [];
 		// read file first time
-		$status1 = \gullevek\dotEnv\DotEnv::readEnvFile(
+		$status1 = DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env'
 		);
 		// read file second time
-		$status2 = \gullevek\dotEnv\DotEnv::readEnvFile(
+		$status2 = DotEnv::readEnvFile(
 			__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 			'test_clean.env'
 		);
@@ -254,15 +468,34 @@ final class DotEnvTest extends TestCase
 			$status2,
 			'Assert second load status level equal'
 		);
+		// check that last erros match
+		$this->assertArrayHasKey(
+			DotEnvLevel::SUCCESS_ENV_EXIST_SKIP->name,
+			DotEnv::getLastReadEnvFileErrors()
+		);
+		$this->assertArraysAreIdenticalIgnoringOrder(
+			[
+				'SUCCESS_ENV_EXIST_SKIP' => [
+					'TEST',
+					'FOOBAR'
+				]
+			],
+			DotEnv::getLastReadEnvFileErrors()
+		);
 	}
 
+	/**
+	 * mark test file read exceptions
+	 *
+	 * @return void
+	 */
 	#[Test]
-	#[TestDox('Test for exceptions thrown')]
+	#[TestDox('Test for exceptions thrown in readEnvFile')]
 	public function testReadEnvFileExceptions(): void
 	{
 		// file not found
 		try {
-			\gullevek\dotEnv\DotEnv::readEnvFile(
+			DotEnv::readEnvFile(
 				__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'not_existing.env',
 				throw_exception: true
@@ -272,12 +505,12 @@ final class DotEnvTest extends TestCase
 			$this->assertStringContainsString(
 				'File not found',
 				$e->getMessage(),
-				'Assert exception message contains "File not found"'
+				'Assert exception message does not contains "File not found"'
 			);
 		}
 		try {
 			chmod(__DIR__ . DIRECTORY_SEPARATOR . 'dotenv' . DIRECTORY_SEPARATOR . 'cannot_read.env', octdec('100000'));
-			\gullevek\dotEnv\DotEnv::readEnvFile(
+			DotEnv::readEnvFile(
 				__DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'cannot_read.env',
 				throw_exception: true
@@ -287,19 +520,36 @@ final class DotEnvTest extends TestCase
 			$this->assertStringContainsString(
 				'File not readable',
 				$e->getMessage(),
-				'Assert exception message contains "File not readable"'
+				'Assert exception message does not contains "File not readable"'
 			);
 		} catch (Exceptions\DotEnvFileOpenFailedException $e) {
 			$this->assertStringContainsString(
 				'Open failed',
 				$e->getMessage(),
-				'Assert exception message contains "Open failed"'
+				'Assert exception message does not contains "Open failed"'
 			);
 		}
 		chmod(__DIR__ . DIRECTORY_SEPARATOR . 'dotenv' . DIRECTORY_SEPARATOR . 'cannot_read.env', octdec('100664'));
 	}
 
+	#[Test]
+	#[TestDox('Test for exceptions thrown in loadOutsideGetEnv')]
+	public function testLoadOutsideGetEnvExceptions(): void
+	{
+		try {
+			DotEnv::loadOutsideGetEnv(merge_flag: 9);
+			$this->fail('Expected InvalidArgumentException was not thrown');
+		} catch (\InvalidArgumentException $e) {
+			$this->assertStringContainsString(
+				'Merge flag is not valid:',
+				$e->getMessage(),
+				'Assert exception message doest not contain "Merge flag is not valid:"'
+			);
+		}
+	}
+
 	/**
+	 * MARK: test comment
 	 * Test comment char
 	 *
 	 * @return void
@@ -308,7 +558,7 @@ final class DotEnvTest extends TestCase
 	#[TestDox('Test that comment char is #')]
 	public function testDotEnvCommentChar(): void
 	{
-		$this->assertEquals('#', \gullevek\dotEnv\DotEnv::COMMENT_CHAR, 'Comment character should be #');
+		$this->assertEquals('#', DotEnv::COMMENT_CHAR, 'Comment character should be #');
 	}
 }
 
