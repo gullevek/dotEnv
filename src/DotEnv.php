@@ -149,21 +149,13 @@ class DotEnv
 		// default other error;
 		$env_file_target = $path . DIRECTORY_SEPARATOR . $env_file;
 		// this is not a file -> abort
-		if (!is_file($env_file_target)) {
-			if ($throw_exception) {
-				throw new Exceptions\DotEnvFileNotFoundException("File not found: " . $env_file_target);
-			}
-			return DotEnvLevel::ERROR_FILE_NOT_FOUND;
-		}
 		// cannot open file -> abort
-		if (!is_readable($env_file_target)) {
-			if ($throw_exception) {
-				throw new Exceptions\DotEnvFileNotReadableException("File not readable: " . $env_file_target);
-			}
-			return DotEnvLevel::ERROR_FILE_NOT_READABLE;
-		}
-		// open file
-		if (($fp = fopen($env_file_target, 'r')) === false) {
+		// open file failed -> abort
+		if (
+			!is_file($env_file_target) ||
+			!is_readable($env_file_target) ||
+			($fp = fopen($env_file_target, 'r')) === false
+		) {
 			if ($throw_exception) {
 				throw new Exceptions\DotEnvFileOpenFailedException("Open failed: " . $env_file_target);
 			}

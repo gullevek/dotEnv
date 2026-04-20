@@ -370,16 +370,16 @@ final class DotEnvTest extends TestCase
 			'default' => [
 				'folder' => null,
 				'file' => null,
-				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_FOUND->value,
-				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_FOUND,
+				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_OPEN_FAILED->value,
+				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_OPEN_FAILED,
 				'expected_env' => [],
 				'chmod' => null,
 			],
 			'cannot open file' => [
 				'folder' => __DIR__ . DIRECTORY_SEPARATOR . 'dotenv',
 				'file' => 'cannot_read.env',
-				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_READABLE->value,
-				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_NOT_READABLE,
+				'expected_status' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_OPEN_FAILED->value,
+				'expected_status_level' => \gullevek\dotEnv\Levels\DotEnvLevel::ERROR_FILE_OPEN_FAILED,
 				'expected_env' => [],
 				// 0000
 				'chmod' => '100000',
@@ -652,12 +652,12 @@ final class DotEnvTest extends TestCase
 				'not_existing.env',
 				throw_exception: true
 			);
-			$this->fail('Expected DotEnvFileNotFoundException was not thrown');
-		} catch (\gullevek\dotEnv\Exceptions\DotEnvFileNotFoundException $e) {
+			$this->fail('Expected DotEnvFileOpenFailedException was not thrown');
+		} catch (\gullevek\dotEnv\Exceptions\DotEnvFileOpenFailedException $e) {
 			$this->assertStringContainsString(
-				'File not found',
+				'Open failed',
 				$e->getMessage(),
-				'Assert exception message does not contains "File not found"'
+				'Assert exception message does not contains "Open failed"'
 			);
 		}
 		try {
@@ -667,13 +667,7 @@ final class DotEnvTest extends TestCase
 				'cannot_read.env',
 				throw_exception: true
 			);
-			$this->fail('Expected DotEnvFileNotReadableException was not thrown');
-		} catch (\gullevek\dotEnv\Exceptions\DotEnvFileNotReadableException $e) {
-			$this->assertStringContainsString(
-				'File not readable',
-				$e->getMessage(),
-				'Assert exception message does not contains "File not readable"'
-			);
+			$this->fail('Expected DotEnvFileOpenFailedException was not thrown');
 		} catch (\gullevek\dotEnv\Exceptions\DotEnvFileOpenFailedException $e) {
 			$this->assertStringContainsString(
 				'Open failed',
@@ -682,9 +676,6 @@ final class DotEnvTest extends TestCase
 			);
 		}
 		chmod(__DIR__ . DIRECTORY_SEPARATOR . 'dotenv' . DIRECTORY_SEPARATOR . 'cannot_read.env', octdec('100664'));
-		// TODO: Catch fopen false error
-		// DotEnvLevel::ERROR_FILE_OPEN_FAILED
-		// throw new Exceptions\DotEnvFileOpenFailedException
 	}
 
 	/**

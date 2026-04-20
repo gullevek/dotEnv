@@ -13,9 +13,7 @@ namespace gullevek\dotEnv\Levels;
 
 enum DotEnvLevel: int
 {
-	case ERROR_FILE_NOT_FOUND = -1;
-	case ERROR_FILE_NOT_READABLE = -2;
-	case ERROR_FILE_OPEN_FAILED = -3;
+	case ERROR_FILE_OPEN_FAILED = -1;
 	case SUCCESS = 0;
 	case SUCCESS_DOUBLE_KEY = 1;
 	case SUCCESS_ENV_EXIST_SKIP = 2;
@@ -42,9 +40,7 @@ enum DotEnvLevel: int
 	{
 		return match ($level) {
 			// errors
-			self::ERROR_FILE_NOT_READABLE => 'File not readable',
-			self::ERROR_FILE_NOT_FOUND => 'File not found',
-			self::ERROR_FILE_OPEN_FAILED => 'File open failed',
+			self::ERROR_FILE_OPEN_FAILED => 'File not readable/not found/open failed',
 			// success
 			self::SUCCESS => 'Success',
 			self::SUCCESS_DOUBLE_KEY => 'Partial loaded',

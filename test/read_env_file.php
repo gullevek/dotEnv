@@ -36,7 +36,7 @@ print "<b>A STATUS</b>: "
 	. "<br>";
 try {
 	$status = DotEnv::readEnvFile(__DIR__ . DIRECTORY_SEPARATOR . '../env', throw_exception: true);
-} catch (Exceptions\DotEnvFileNotFoundException $e) {
+} catch (Exceptions\DotEnvFileOpenFailedException $e) {
 	print "<b>EXCEPTION</b>: " . $e->getMessage() . "<br>";
 }
 
