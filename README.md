@@ -85,8 +85,6 @@ The `readEnvFile` will return a DotEnvLevel status message
 - `SUCCESS_DOUBLE_KEY_ENV_EXIST_SKIP`: load successful, but we have double keys and some keys already existed in the _ENV array
 - `WARNING_FILE_LOADED_NO_DATA`: file exists, but no data
 - `ERROR_FILE_NOT_FOUND`: file does not exist
-- `ERROR_FILE_NOT_READABLE`: file exists, but not readable
-- `ERROR_FILE_OPEN_FAILED`: file eixts, but cannot open
 
 ### Reading SUCESS_* status block errors
 
@@ -116,12 +114,8 @@ use gullevek\dotEnv\Exceptions;
 
 try {
     $status = gullevek\dotEnv\DotEnv::readEnvFile(throw_exceptions: true);
-} catch (Exceptions\DotEnvFileNotFoundException $e) {
-    // file not found
-} catch (Exceptions\DotEnvFileNotReadableException $e) {
-    // file not readable
 } catch (Exception\DotEnvFileOpenFailedException $e) {
-    // file open failed
+    // file not found/not readable/open failed
 }
 ```
 
