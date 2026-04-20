@@ -682,8 +682,14 @@ final class DotEnvTest extends TestCase
 			);
 		}
 		chmod(__DIR__ . DIRECTORY_SEPARATOR . 'dotenv' . DIRECTORY_SEPARATOR . 'cannot_read.env', octdec('100664'));
+		// TODO: Catch fopen false error
+		// DotEnvLevel::ERROR_FILE_OPEN_FAILED
+		// throw new Exceptions\DotEnvFileOpenFailedException
 	}
 
+	/**
+	 * test for exception with bad merge flag
+	 */
 	#[Test]
 	#[TestDox('Test for exceptions thrown in loadOutsideGetEnv')]
 	public function testLoadOutsideGetEnvExceptions(): void
