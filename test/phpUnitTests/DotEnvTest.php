@@ -25,6 +25,8 @@ final class DotEnvTest extends TestCase
 	public const OUTSIDE_SET = [
 		'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
 		'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+		'DOTENV_OTHER' => 'Other_A',
+		'OTHER_PHPUNIT_A' => 'Other_B',
 	];
 
 	/**
@@ -56,130 +58,266 @@ final class DotEnvTest extends TestCase
 				copy($file_content, $env_file);
 			}
 		}
-		putenv("DOTENV_PHPUNIT_A=EnvVarPhpUnit_A");
-		putenv("DOTENV_PHPUNIT_B=EnvVarPhpUnit_B");
+		foreach (self::OUTSIDE_SET as $key => $value) {
+			putenv($key . "=" . $value);
+		}
+	}
+
+	// MARK: loadOutsideGetEnv
+
+	/**
+	 * provider for the load outside get env
+	 *
+	 * @return array
+	 */
+	public static function providerLoadOutsideGetEnv(): array
+	{
+		return [
+			'all' => [
+				'set' => null,
+				'env_list' => null,
+				'flag' => null,
+				'expected' => self::OUTSIDE_SET,
+				'contain_only' => true,
+			],
+			'all, set' => [
+				'set' => null,
+				'env_list' => array_keys(self::OUTSIDE_SET),
+				'flag' => null,
+				'expected' => self::OUTSIDE_SET,
+				'contain_only' => true,
+			],
+			'set, default merge flag' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'env_list' => null,
+				'flag' => null,
+				'expected' => self::OUTSIDE_SET,
+				'contain_only' => true,
+			],
+			'set, overwrite existing' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'env_list' => null,
+				'flag' => \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+					'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+					'DOTENV_OTHER' => 'Other_A',
+					'OTHER_PHPUNIT_A' => 'Other_B',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'contain_only' => true,
+			],
+			'set, keep existing' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'env_list' => null,
+				'flag' => \gullevek\dotEnv\DotEnv::MERGE_KEEP_EXISTING,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+					'DOTENV_OTHER' => 'Other_A',
+					'OTHER_PHPUNIT_A' => 'Other_B',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'contain_only' => true,
+			],
+			// load list
+			'one ok, one ignore' => [
+				'set' => null,
+				'env_list' => ['DOTENV_PHPUNIT_A', 'DOES_NOT_EXIST'],
+				'flag' => null,
+				'expected' => ['DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A'],
+				'contain_only' => false,
+			],
+			'one ok, overwrite' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'env_list' => ['DOTENV_PHPUNIT_A', 'DOES_NOT_EXIST'],
+				'flag' => null,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'contain_only' => false,
+			],
+			'one ok, overwrite' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'env_list' => ['DOTENV_PHPUNIT_A', 'DOES_NOT_EXIST'],
+				'flag' => \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'contain_only' => false,
+			],
+			'one ok, overwrite' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'env_list' => ['DOTENV_PHPUNIT_A', 'DOES_NOT_EXIST'],
+				'flag' => \gullevek\dotEnv\DotEnv::MERGE_KEEP_EXISTING,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'NEW_ENTRY' => 'Inside_New',
+				],
+				'contain_only' => false,
+			],
+			// fnmatch
+			'load fnmatch X*' => [
+				'set' => null,
+				'env_list' => ['DOTENV_*'],
+				'flag' => null,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+					'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+					'DOTENV_OTHER' => 'Other_A',
+				],
+				'contain_only' => false,
+			],
+			'load fnmatch X*X' => [
+				'set' => null,
+				'env_list' => ['DOTENV_*_A'],
+				'flag' => null,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+				],
+				'contain_only' => false,
+			],
+			'load fnmatch *X*' => [
+				'set' => null,
+				'env_list' => ['*_PHPUNIT_*'],
+				'flag' => null,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+					'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+					'OTHER_PHPUNIT_A' => 'Other_B',
+				],
+				'contain_only' => false,
+			],
+			'load fnmatch *X' => [
+				'set' => null,
+				'env_list' => ['*_PHPUNIT_A'],
+				'flag' => null,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+					'OTHER_PHPUNIT_A' => 'Other_B',
+				],
+				'contain_only' => false,
+			],
+			'load fnmatch X*, merge existing' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+				],
+				'env_list' => ['DOTENV_*'],
+				'flag' => \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A',
+					'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+					'DOTENV_OTHER' => 'Other_A',
+				],
+				'contain_only' => false,
+			],
+			'load fnmatch X*, keep existing' => [
+				'set' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+				],
+				'env_list' => ['DOTENV_*'],
+				'flag' => \gullevek\dotEnv\DotEnv::MERGE_KEEP_EXISTING,
+				'expected' => [
+					'DOTENV_PHPUNIT_A' => 'InternalSet_A',
+					'DOTENV_PHPUNIT_B' => 'EnvVarPhpUnit_B',
+					'DOTENV_OTHER' => 'Other_A',
+				],
+				'contain_only' => false,
+			],
+		];
 	}
 
 	/**
-	 * MARK: loadOutsideGetEnv
 	 * Tests for reading getenv data into $_ENV
 	 *
 	 * @return void
 	 */
 	#[Test]
-	#[TestDox('Test loading outside environment variables')]
-	public function testLoadOutsideGetEnv(): void
+	#[TestDox('Test loading outside environment variables [$_dataName]')]
+	#[DataProvider('providerLoadOutsideGetEnv')]
+	public function testLoadOutsideGetEnv(
+		?array $set,
+		?array $env_list,
+		?int $flag,
+		array $expected,
+		bool $contain_only,
+	): void {
+		$_ENV = [];
+		if ($set != null) {
+			$_ENV = $set;
+		}
+		if ($env_list === null) {
+			if ($flag === null) {
+				\gullevek\dotEnv\DotEnv::loadOutsideGetEnv();
+			} else {
+				\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: $flag);
+			}
+		} else {
+			if ($flag === null) {
+				\gullevek\dotEnv\DotEnv::loadOutsideGetEnv($env_list);
+			} else {
+				\gullevek\dotEnv\DotEnv::loadOutsideGetEnv($env_list, merge_flag: $flag);
+			}
+		}
+		if (!$contain_only) {
+			$this->assertArraysAreIdenticalIgnoringOrder(
+				$expected,
+				$_ENV
+			);
+		} else {
+			// assert sub array doest not exist anymore
+			foreach ($expected as $key => $value) {
+				$this->assertArrayHasKey($key, $_ENV);
+				$this->assertEquals($value, $_ENV[$key]);
+			}
+		}
+	}
+
+	/**
+	 * make sure a null read returns null for last errors
+	 * run before any other check, so we get a clean return
+	 *
+	 * @return void
+	 */
+	#[TEST]
+	#[TestDox('Test for reading empty getLastReadEnvFileErrors()')]
+	public function testGetLastReadEnvFileErrors(): void
 	{
-		// loading all hast to have above env set
-		$_ENV = [];
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv();
-		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
-			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
-		}
-		// load just one, only one should be set
-		$_ENV = [];
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(['DOTENV_PHPUNIT_A', 'DOES_NOT_EXIST']);
-		$this->assertArrayHasKey('DOTENV_PHPUNIT_A', $_ENV, 'Missing DOTENV_PHPUNIT_A');
-		$this->assertArrayNotHasKey('DOTENV_PHPUNIT_B', $_ENV, 'Has DOTENV_PHPUNIT_B');
-		$this->assertArraysAreIdenticalIgnoringOrder(
-			['DOTENV_PHPUNIT_A' => 'EnvVarPhpUnit_A'],
-			$_ENV
-		);
-		// load both, only the two should be set
-		$_ENV = [];
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(array_keys(self::OUTSIDE_SET));
-		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
-			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
-		}
-		$this->assertArraysAreIdenticalIgnoringOrder(
-			self::OUTSIDE_SET,
-			$_ENV
-		);
-		// internal set, external set, default will be overwritten
-		$_ENV = [];
-		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv();
-		$this->assertNotEquals(
-			'InternalSet_A',
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should not match'
-		);
+		$content = \gullevek\dotEnv\DotEnv::getLastReadEnvFileErrors();
 		$this->assertEquals(
-			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should match'
+			[],
+			$content
 		);
-		// internal set, external set, merge with existing, do not overwrite
-		$_ENV = [];
-		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_KEEP_EXISTING);
-		$this->assertNotEquals(
-			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should not match'
-		);
-		$this->assertEquals(
-			'InternalSet_A',
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should match'
-		);
-		// internal set, external set, different load, merge keep is ignored
-		$_ENV = [];
-		$_ENV['DOTENV_SOMEOTHER_A'] = 'InternalSet_A';
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_KEEP_EXISTING);
-		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
-			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
-		}
-		$this->assertEquals('InternalSet_A', $_ENV['DOTENV_SOMEOTHER_A']);
-		// interal set, external set, merge with existing, overwrite
-		$_ENV = [];
-		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING);
-		$this->assertNotEquals(
-			'InternalSet_A',
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should not match'
-		);
-		$this->assertEquals(
-			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should match'
-		);
-		$this->assertNotEquals(
-			'InternalSet_A',
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should not match'
-		);
-		$this->assertEquals(
-			self::OUTSIDE_SET['DOTENV_PHPUNIT_A'],
-			$_ENV['DOTENV_PHPUNIT_A'],
-			'Should match'
-		);
-		// some, but we only load one
-		$_ENV = [];
-		$_ENV['DOTENV_PHPUNIT_A'] = 'InternalSet_A';
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(
-			['DOTENV_PHPUNIT_A'],
-			merge_flag: \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING
-		);
-		// internal set, external set, different load, merge overwrite is ignored
-		$_ENV = [];
-		$_ENV['DOTENV_SOMEOTHER_A'] = 'InternalSet_A';
-		\gullevek\dotEnv\DotEnv::loadOutsideGetEnv(merge_flag: \gullevek\dotEnv\DotEnv::MERGE_OVERWRITE_EXISTING);
-		foreach (array_keys(self::OUTSIDE_SET) as $out_env_key) {
-			$this->assertArrayHasKey($out_env_key, $_ENV, 'Missing key: ' . $out_env_key);
-		}
-		$this->assertEquals('InternalSet_A', $_ENV['DOTENV_SOMEOTHER_A']);
 	}
 
 	// MARK: readEnvFile
 
 	/**
-	 * Undocumented function
+	 * env file read provider
 	 *
 	 * @return array
 	 */
-	public static function envFileProvider(): array
+	public static function providerEnvFile(): array
 	{
 		$dot_env_content = [
 			'SOMETHING' => 'A',
@@ -289,7 +427,7 @@ final class DotEnvTest extends TestCase
 	 */
 	#[Test]
 	#[TestDox('Read _ENV file from $folder / $file with expected status: $expected_status [$_dataName]')]
-	#[DataProvider('envFileProvider')]
+	#[DataProvider('providerEnvFile')]
 	public function testReadEnvFile(
 		?string $folder,
 		?string $file,
@@ -447,7 +585,6 @@ final class DotEnvTest extends TestCase
 			'Outside',
 			$_ENV['TEST']
 		);
-		// p
 	}
 
 	// MARK: exceptions

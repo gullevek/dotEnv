@@ -36,7 +36,7 @@ class DotEnv
 	 * "load_outside_env" in the "readEnvFile" call
 	 *
 	 * @param  array<string> $env_list [default=[]]  Load outside getenv data into _ENV data,
-	 *                                               if empty array loads all,
+	 *                                               if empty array loads all, fnmatch characters can be used
 	 * @param  int           $merge_flag [default=0] Merge flag
 	 *                                               OVERWRITE: overwrite $_ENV
 	 *                                               MERGE_KEEP_EXISTING: merge $_ENV, do not overwrite set in $_ENV
@@ -71,15 +71,31 @@ class DotEnv
 			}
 		} else {
 			foreach ($env_list as $env) {
-				if (($var = getenv($env)) === false) {
-					continue;
-				}
-				if (
-					$merge_flag == self::OVERWRITE ||
-					$merge_flag == self::MERGE_OVERWRITE_EXISTING ||
-					!isset($_ENV[$env])
-				) {
-					$_ENV[$env] = $var;
+				// if we have ?, *, [], ! or \, then do fn match
+				if (strpbrk($env, '*?[]\\') !== false) {
+					foreach (getenv() as $k_env => $v_env) {
+						if (!fnmatch($env, $k_env)) {
+							continue;
+						}
+						if (
+							$merge_flag == self::OVERWRITE ||
+							$merge_flag == self::MERGE_OVERWRITE_EXISTING ||
+							!isset($_ENV[$k_env])
+						) {
+							$_ENV[$k_env] = $v_env;
+						}
+					}
+				} else {
+					if (($var = getenv($env)) === false) {
+						continue;
+					}
+					if (
+						$merge_flag == self::OVERWRITE ||
+						$merge_flag == self::MERGE_OVERWRITE_EXISTING ||
+						!isset($_ENV[$env])
+					) {
+						$_ENV[$env] = $var;
+					}
 				}
 			}
 		}

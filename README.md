@@ -60,6 +60,10 @@ public static function loadOutsideGetEnv(
   - `MERGE_KEEP_EXISTING`: merge but keep data with the same key
   - `MERGE_OVERWRITE_EXISTING`: merge but overwrite data with the same key
 
+Note to `env_list`, entries can be fnmatch notated
+
+The wildcard style does not support matching with "*" in the middle
+
 ## How it works
 
 Put the function where it is needed or put it in a file and load it.

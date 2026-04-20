@@ -123,5 +123,7 @@ try {
 	print "loadOutsideGetEnv Error: " . $e->getMessage() . "<br>";
 }
 
+DotEnv::loadOutsideGetEnv(['HTTP_SEC_FETCH_*', 'HTTP_SEC_FETCH_MODE']);
+print "<b>POST LOAD ENV D</b>: <pre>" . print_r($_ENV, true) . "</pre><br>";
 
 // __END__
