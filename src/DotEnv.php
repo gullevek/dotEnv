@@ -133,11 +133,11 @@ class DotEnv
 	 * @param  bool   $load_outside_env [default=false] Load outside set env vars if set before merging
 	 *                                  with names as set in the $env_file. Will not load anything else.
 	 * @param  bool   $throw_exception [default=false] Whether to throw exceptions or not
-	 * @return DotEnvLevel      OTHER_ERROR/-1 other error
-	 *                          SUCCESS/0 for success full load
-	 *                          FILE_LOADED_NO_DATA_OR_ALREADY_LOADED/1 for file loadable, no data or already loaded
-	 *                          FILE_NOT_READABLE_OR_OPEN_FAILED/2 for file not readable or open failed
-	 *                          FILE_NOT_FOUND/3 for file not found
+	 * @return DotEnvLevel ERROR_FILE_OPEN_FAILED: File could not be opened
+	 *                     SUCCESS: for success full load
+	 *                     SUCCESS_DOUBLE_KEY: loaded, but double key found
+	 *                     SUCCESS_ENV_EXIST_SKIP: loaded, but existing env entries found
+	 *                     WARNING_FILE_LOADED_NO_DATA: empty file
 	 */
 	public static function readEnvFile(
 		string $path = __DIR__,
